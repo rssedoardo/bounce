@@ -6,4 +6,4 @@ var BeaconSchema   = new Schema({
 	beacon_id : String
 });
 
-module.exports = mongoose.model('Bear', BearSchema);
+module.exports = mongoose.model('Beacon', BeaconSchema);
