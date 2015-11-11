@@ -49,13 +49,13 @@ router.route('/beacons')
         var beacon = new Beacon();
         beacon.name = req.body.name;  
 		beacon.beacon_id = req.body.beacon_id;  
-
+		console.log(beacon);
         // save and check for errors
         beacon.save(function(err) {
             if (err)
                 res.send(err);
 
-            res.json({ message: 'Beacon created!' });
+            res.json({ message: 'Beacon created!'});
         });
         
     });
