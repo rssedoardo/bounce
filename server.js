@@ -1,5 +1,3 @@
-// server.js
-
 // BASE SETUP
 // =============================================================================
 
@@ -7,6 +5,7 @@
 var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -14,6 +13,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 var port = process.env.PORT || 8080;        // set our port
+var mongodb_uri = 'mongodb://localhost:27017/local'
+mongoose.connect(mongodb_uri); // connect to our database
+
+// DATABASE
+// =============================================================================
 
 // ROUTES FOR OUR API
 // =============================================================================
