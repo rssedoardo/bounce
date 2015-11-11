@@ -30,8 +30,7 @@ var router = express.Router();              // get an instance of the express Ro
 // middleware to use for all requests
 router.use(function(req, res, next) {
     // do logging
-    console.log('Something is happening. Req is: ');
-	console.log(req);
+    console.log('Something is happening.');
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -47,15 +46,16 @@ router.route('/beacons')
     .post(function(req, res) {
         
         var beacon = new Beacon();
-        beacon.name = req.body.name;  
-		beacon.beacon_id = req.body.beacon_id;  
-		console.log(beacon);
+        console.log("Req.body is: ");
+	console.log(req.body);
+	beacon.name = req.body.name;  
+	beacon.beacon_id = req.body.beacon_id;  
         // save and check for errors
         beacon.save(function(err) {
             if (err)
                 res.send(err);
 
-            res.json({ message: 'Beacon created!'});
+            res.json({ message: 'Beacon created!', beacon : beacon});
         });
         
     });
