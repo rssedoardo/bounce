@@ -1,18 +1,33 @@
-// BASE SETUP
+// SETUP
 // =============================================================================
 
-// call the packages we need
-var express    = require('express');        // call express
-var app        = express();                 // define our app using express
+var express    = require('express');
+var app        = express();                
+var fs         = require('fs');
+var https      = require('https');
 var bodyParser = require('body-parser');
-var mongoose = require('mongoose');
+var morgan     = require('morgan');
+var mongoose   = require('mongoose');
+var jwt	       = require('jsonwebtoken');
+var crypto     = require('crypto');
+var env        = require('node-env-file');
 
-// configure app to use bodyParser()
-// this will let us get the data from a POST
+// BodyParser let us get the data from a POST req
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 8080;        // set our port
+// load certificate and p_key
+var p_key = fs.readFileSync('var/private-key.pem');
+var certificate = fs.readFileSync('var/server.crt');
+var server_opts = { key : p_key, cert : certificate};
+
+// use logger
+app.use(morgan('dev'));
+
+// load env
+env( __dirname +  '/.env');
+// authentication setup
+//app.set('jwtTokenSecret', process.env.BOUNCE_AUTH_SEC);
 
 // DATABASE
 // =============================================================================
@@ -21,41 +36,36 @@ var mongodb_uri = 'mongodb://localhost:27017/local'
 mongoose.connect(mongodb_uri); // connect to our database
 
 // Schemas
-var Beacon     = require('./app/models/beacon');
+var User     = require('./app/models/user');
 
-// ROUTES FOR OUR API
+// ROUTES
 // =============================================================================
-var router = express.Router();              // get an instance of the express Router
-
-// middleware to use for all requests
-router.use(function(req, res, next) {
-    // do logging
-    console.log('Something is happening.');
-    next(); // make sure we go to the next routes and don't stop here
-});
+var router = express.Router();
 
 // basic route
 router.get('/', function(req, res) {
     res.json({ message: 'This is the Bounce API!' });   
 });
 
-// Beacons api
-router.route('/beacons')
+// Users route
+router.route('/user/register')
 
-    // create a beacon
     .post(function(req, res) {
-        
-        var beacon = new Beacon();
-        console.log("Req.body is: ");
-	console.log(req.body);
-	beacon.name = req.body.name;  
-	beacon.beacon_id = req.body.beacon_id;  
+        var user  = new User({
+		username: req.body.username,
+		password: req.body.password,
+		beacon_id: req.body.beacon_id,
+		email: req.body.email,
+		total_bounces: 0,
+		encounters: [],
+		posts: []
+	});
+	  
         // save and check for errors
-        beacon.save(function(err) {
+        user.save(function(err) {
             if (err)
                 res.send(err);
-
-            res.json({ message: 'Beacon created!', beacon : beacon});
+            res.json({ message: 'User created!', user: user});
         });
         
     });
@@ -69,5 +79,5 @@ app.use('/api', router);
 
 // START THE SERVER
 // =============================================================================
-app.listen(port);
-console.log('Server started on port ' + port);
+https.createServer(server_opts, app).listen(443);
+console.log('Server started on port 443');
