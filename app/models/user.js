@@ -22,26 +22,35 @@ UserSchema.path('email').validate(function (email) {
    	return emailRegex.test(email);
 }, 'The e-mail field cannot be empty.');
 
-var encrypt = function(password, salt){
+var encrypt = function(password, salt, cb) {
 	crypto.pbkdf2(password, salt, parseInt(process.env.ENCITER),parseInt(process.env.ENCLENGTH), process.env.ENCHASHF,  function (err, hash) {
-        		if (err) { throw err; };
-			return (new Buffer(hash).toString('hex'));
-      });
+        		if (err) cb (err, null);
+			hash = new Buffer(hash).toString('hex');
+			return cb(null, hash); 
+	});
 };
 
 UserSchema.pre('save', function(next){
 	var user = this;
 	if (!user.isModified('password')) return next();
 	crypto.randomBytes(128, function(err, salt){
-		user.password = encrypt(user.password, salt);
-		user.salt = salt;
-		next();
+		salt = salt.toString('hex');
+		encrypt(user.password, salt, function(err, hashedPass){
+			if (err) throw err;
+			user.password = hashedPass;
+			user.salt = salt;
+			next();
+		});
 	});
 });
 
 UserSchema.methods.comparePassword = function(candidatePass, cb){
-	var match = this.password === encrypt(candidatePass, this.salt);
-	cb(null, match);
+	var user = this
+	encrypt(candidatePass, user.salt, function(err, hashedPass){
+		if (err) cb(err, null);
+		var match = (user.password == hashedPass);
+		cb(null, match)
+	});
 };
  
 module.exports = mongoose.model('User', UserSchema);

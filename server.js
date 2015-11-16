@@ -27,7 +27,7 @@ app.use(morgan('dev'));
 // load env
 env( __dirname +  '/.env');
 // authentication setup
-//app.set('jwtTokenSecret', process.env.BOUNCE_AUTH_SEC);
+app.set('jwtTokenSecret', process.env.JWTSECRET);
 
 // DATABASE
 // =============================================================================
@@ -65,11 +65,43 @@ router.route('/user/register')
         user.save(function(err) {
             if (err)
                 res.send(err);
-            res.json({ message: 'User created!', user: user});
+            res.json({ message: 'User created!', username: user.username});
         });
         
     });
 
+router.route('/user/login')    
+   
+    .post(function(req, res) {
+        // find the user
+  	User.findOne({
+    		username: req.body.username
+  	}, function(err, user) {
+		if (err) throw err;
+		if (!user) {
+			res.json({success: false, message: "Authentication failed, user not found!"});
+		} else {
+			user.comparePassword( req.body.password, function(err, matched){
+				if (err) throw err;
+				// check that pass is right
+				if (!matched){
+					res.json({ success: false, message: 'Authentication failed, wrong password.' });
+				} else {
+					// create a token
+        				var token = jwt.sign(user.username, app.get('jwtTokenSecret') , {
+          					expiresIn: 60* 1440*365 // expires in 365 days
+        				});
+					res.json({
+          					success: true,
+          					message: 'Enjoy your token!',
+          					token: token
+        				});
+				}
+			});
+		}
+	});
+    }
+);
 
 // more routes for our API will happen here
 
