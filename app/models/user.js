@@ -18,9 +18,17 @@ var UserSchema   = new Schema({
 });
 
 UserSchema.path('email').validate(function (email) {
+	if (email === null || email === undefined) return false;
 	var emailRegex = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
    	return emailRegex.test(email);
-}, 'The e-mail field cannot be empty.');
+}, 'Invalid email');
+
+UserSchema.path('username').validate(function (username) {
+        if (username === null || username === undefined) return false;
+        return (username.length > 1);
+}, 'Invalid username');
+
+
 
 var encrypt = function(password, salt, cb) {
 	crypto.pbkdf2(password, salt, parseInt(process.env.ENCITER),parseInt(process.env.ENCLENGTH), process.env.ENCHASHF,  function (err, hash) {
@@ -32,7 +40,18 @@ var encrypt = function(password, salt, cb) {
 
 UserSchema.pre('save', function(next){
 	var user = this;
+	var err = "";
+	// some checks
+	if (!user.password) err += "- Invalid password ";
+	if (!user.email) err += "- Invalid email ";
+	if (!user.beacon_id) err+= "- Invalid beacon id ";
+
+	console.log(err);
+	if (err !== "" ) next(new Error(err));
+	
+
 	if (!user.isModified('password')) return next();
+	if (user.password.length < 1) next(new Error('Invalid password'));
 	crypto.randomBytes(128, function(err, salt){
 		salt = salt.toString('hex');
 		encrypt(user.password, salt, function(err, hashedPass){

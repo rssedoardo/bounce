@@ -63,9 +63,9 @@ router.route('/user/register')
 	  
         // save and check for errors
         user.save(function(err) {
-            if (err)
-                res.send(err);
-            res.json({ message: 'User created!', username: user.username});
+		if (err)
+                	res.json({success: false, message: err.message});
+            	res.json({success: true,  message: 'User created!', username: user.username});
         });
         
     });
