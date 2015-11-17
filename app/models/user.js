@@ -50,12 +50,11 @@ UserSchema.pre('save', function(next){
 	if (!user.email) err += "- Invalid email ";
 	if (!user.beacon_id) err+= "- Invalid beacon id ";
 
-	console.log(err);
 	if (err !== "" ) next(new Error(err));
 	
 
 	if (!user.isModified('password')) return next();
-	if (user.password.length < 1) next(new Error('Invalid password'));
+
 	crypto.randomBytes(128, function(err, salt){
 		salt = salt.toString('hex');
 		encrypt(user.password, salt, function(err, hashedPass){
