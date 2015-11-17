@@ -10,11 +10,15 @@ var UserSchema   = new Schema({
 	email: { type: String, unique: true},
 	beacon_id: String,
 	total_bounces: Number,
-	encounters: [{ other_user: { type: ObjectId, ref: 'User'},
+	timeline: [{ other_user: { type: ObjectId, ref: 'User'},
 			post: { type: ObjectId, ref: 'Post'},
 			timestamp: Date,
 			bounces: Number}],
-	posts: [{ type: ObjectId, ref: 'Post'}]
+	saved_posts: [( other_user: { type: ObjectId, ref: 'User'},
+			post: { type: ObjectId, ref: 'Post'},
+			timestamp: Date,
+			bounces: Number}],
+	user_posts: [{ type: ObjectId, ref: 'Post'}]
 });
 
 UserSchema.path('email').validate(function (email) {
