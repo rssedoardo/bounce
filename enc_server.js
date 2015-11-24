@@ -4,7 +4,7 @@
 var express = require('express');
 var app = express();
 var redis = require("redis");
-// var redisClient = redis.createClient('6370', 'encounter.czdmke.0001.usw2.cache.amazonaws.com');
+var redisClient = redis.createClient('6379', 'encounter.czdmke.0001.usw2.cache.amazonaws.com');
 var bodyParser = require('body-parser');
 var morgan     = require('morgan');
 var Combinatorics = require('js-combinatorics');
@@ -40,11 +40,19 @@ router.post('/encounter', function(req, res){
 	cmb = Combinatorics.combination(req.body.list_ids, 2); // create ids permutation
 	// and add them to redis
 	while(a = cmb.next()){
-		// store with timestamp
-		redisClient.hmset(a[0]+a[1], {
-		    'timestamp': new Date().getTime()
-		}, redis.print);
-		redisClient.expire(a[0]+a[1], 300); // expires in 5 minutes
+		var key = a[0]+a[1];
+		// check if we already have key
+		redisClient.exists(key, function(err, reply) {
+		    if (reply === 1) {
+		        console.log(redisClient.ttl(key));
+		        redisClient.expire(key, redisClient.ttl(key) + 300); // expires in 5 minutes
+		    } else {
+				// store with timestamp
+				redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
+				redisClient.expire(key, 300); // expires in 5 minutes
+			}
+		});
+
 	}
 	res.json({success: true, message: 'IDs added to Redis'});
 });
