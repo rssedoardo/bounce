@@ -41,17 +41,9 @@ router.post('/encounter', function(req, res){
 	// and add them to redis
 	cmb.forEach(function(a){
 		var key = a[0]+a[1];
-		// check if we already have key
-		redisClient.exists(key, function(err, reply) {
-		    if (reply === 1) {
-		        console.log(redisClient.ttl(key));
-		        redisClient.expire(key, redisClient.ttl(key) + 300); // expires in 5 minutes
-		    } else {
-				// store with timestamp
-				redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
-				redisClient.expire(key, 300); // expires in 5 minutes
-			}
-		});
+		// store and set or reset TTL
+		redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
+		redisClient.expire(key, 300); // expires in 5 minutes
 	});
 	res.json({success: true, message: 'IDs added to Redis'});
 });
