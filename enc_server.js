@@ -39,7 +39,7 @@ router.post('/encounter', function(req, res){
 	var cmb, a;
 	cmb = Combinatorics.combination(req.body.list_ids, 2); // create ids permutation
 	// and add them to redis
-	while(a = cmb.next()){
+	cmb.forEach(function(a){
 		var key = a[0]+a[1];
 		// check if we already have key
 		redisClient.exists(key, function(err, reply) {
@@ -52,8 +52,7 @@ router.post('/encounter', function(req, res){
 				redisClient.expire(key, 300); // expires in 5 minutes
 			}
 		});
-
-	}
+	});
 	res.json({success: true, message: 'IDs added to Redis'});
 });
 
