@@ -13,6 +13,8 @@ var Combinatorics = require('js-combinatorics');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
+var streams = [];
 // use logger
 app.use(morgan('dev'));
 
@@ -40,13 +42,29 @@ router.post('/encounter', function(req, res){
 	cmb = Combinatorics.combination(req.body.list_ids, 2); // create ids permutation
 	// and add them to redis
 	cmb.forEach(function(a){
-		var key = a[0]+a[1];
-		// store and set or reset TTL
-		redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
-		redisClient.expire(key, 300); // expires in 5 minutes
+		if (a[0] !== a[1]){
+			var key = a[0]+" && "+a[1];
+			// store and set or reset TTL
+			redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
+			redisClient.expire(key, 300); // expires in 5 minutes
+			// stream to the clients
+			streams.forEach(function(stream){
+				stream.write("ENGAGEMENT "+a[0]+" && "+a[1]); 
+			});
+		}
 	});
 	res.json({success: true, message: 'IDs added to Redis'});
 });
+
+app.get('/stream', function(req,res) { 
+	var newStream = new stream.PassThrough();
+	streams.push(newStream); 
+	newStream.pipe(res);
+
+	res.on('end', function() { 
+		streams.splice(streams.indexOf(newStream),1); 
+	}); 
+}); 
 
 app.use('/enc/api', router);
 
