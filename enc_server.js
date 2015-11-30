@@ -42,20 +42,9 @@ router.post('/encounter', function(req, res){
 	var cmb, a;
 	console.log(req.body.list_ids);
 	console.log(req.body.list_ids.length);
-	cmb = combinatorics.combination(req.body.list_ids, 2); // create ids permutation
-	// and add them to redis
-	cmb.forEach(function(a){
-		if (a[0] !== a[1]){
-			var key = a[0]+" && "+a[1];
-			// store and set or reset TTL
-			redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
-			redisClient.expire(key, 300); // expires in 5 minutes
-			// stream to the clients
-			streams.forEach(function(stream){
-				stream.write("ENGAGEMENT "+a[0]+" && "+a[1]); 
-			});
-		}
-	});
+
+	saveEncounters(req.body.list_ids);
+
 	res.json({success: true, message: 'IDs added to Redis'});
 });
 
@@ -72,3 +61,34 @@ router.get('/stream', function(req,res) {
 app.use('/enc/api', router);
 
 app.listen(80);
+
+
+// HELPER METHODS
+// ===========
+
+var saveEncounters = function(list_ids){
+
+	// remove duplicates ids from the array and slice it - maximum 32 ids for each request are supported
+	list_ids = removeDuplicates(list_ids).slice(0, 32);
+	cmb = combinatorics.combination(req.body.list_ids, 2); // create ids permutation
+	// and add them to redis
+	cmb.forEach(function(a){
+		if (a[0] !== a[1]){
+			var key = a[0]+" && "+a[1];
+			// store and set or reset TTL
+			redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
+			redisClient.expire(key, 300); // expires in 5 minutes
+			// stream to the clients
+			streams.forEach(function(stream){
+				stream.write("ENGAGEMENT "+a[0]+" && "+a[1]); 
+			});
+		}
+	});
+}
+
+var removeDuplicates = function(a) {
+    var seen = {};
+    return a.filter(function(item) {
+        return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    });
+}
