@@ -57,7 +57,7 @@ router.post('/encounter', function(req, res){
 	res.json({success: true, message: 'IDs added to Redis'});
 });
 
-app.get('/stream', function(req,res) { 
+router.get('/stream', function(req,res) { 
 	var newStream = new stream.PassThrough();
 	streams.push(newStream); 
 	newStream.pipe(res);
