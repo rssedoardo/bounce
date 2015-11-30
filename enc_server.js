@@ -40,6 +40,8 @@ router.get('/', function(req, res) {
 
 router.post('/encounter', function(req, res){
 	var cmb, a;
+	console.log(req.body.list_ids);
+	console.log(req.body.list_ids.length);
 	cmb = combinatorics.combination(req.body.list_ids, 2); // create ids permutation
 	// and add them to redis
 	cmb.forEach(function(a){
