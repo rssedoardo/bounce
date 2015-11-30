@@ -7,7 +7,8 @@ var redis = require("redis");
 var redisClient = redis.createClient('6379', 'encounter.czdmke.0001.usw2.cache.amazonaws.com');
 var bodyParser = require('body-parser');
 var morgan     = require('morgan');
-var Combinatorics = require('js-combinatorics');
+var stream = require('stream');
+var combinatorics = require('js-combinatorics');
 
 // BodyParser let us get the data from a POST req
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -39,7 +40,7 @@ router.get('/', function(req, res) {
 
 router.post('/encounter', function(req, res){
 	var cmb, a;
-	cmb = Combinatorics.combination(req.body.list_ids, 2); // create ids permutation
+	cmb = combinatorics.combination(req.body.list_ids, 2); // create ids permutation
 	// and add them to redis
 	cmb.forEach(function(a){
 		if (a[0] !== a[1]){
