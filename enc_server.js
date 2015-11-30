@@ -5,6 +5,7 @@ var express = require('express');
 var app = express();
 var redis = require("redis");
 var redisClient = redis.createClient('6379', 'encounter.czdmke.0001.usw2.cache.amazonaws.com');
+var notificationRedisClient = redis.createClient('6379', 'encounter.czdmke.0001.usw2.cache.amazonaws.com');
 var bodyParser = require('body-parser');
 var morgan     = require('morgan');
 var stream = require('stream');
@@ -29,6 +30,11 @@ redisClient.on("connect", function () {
     console.log("Connection to Redis was successful!");
 });
 
+notificationRedisClient.psubscribe("__key*__:expire*");
+
+notificationRedisClient.on("message", function (channel, message) {
+    console.log("notify channel " + channel + ": " + message);
+});
 // ROUTER
 // ===========
 
