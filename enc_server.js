@@ -78,7 +78,9 @@ var saveEncounters = function(list_ids, res){
 			var key = a[0]+" && "+a[1];
 			redisClient.exists(key, function(err, reply) {
 			    if (reply === 1) {
-					streams.forEach(function(stream){
+			    	// do nothing
+			    } else {
+			    	streams.forEach(function(stream){
 						console.log("writing to stream");
 						stream.write("ENGAGEMENT "+key+'\n'); 
 					});
