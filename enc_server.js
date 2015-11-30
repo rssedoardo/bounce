@@ -39,18 +39,17 @@ router.get('/', function(req, res) {
 });
 
 router.post('/encounter', function(req, res){
-	var cmb, a;
-	console.log(req.body.list_ids);
-	console.log(req.body.list_ids.length);
-
-	saveEncounters(req.body.list_ids);
-
-	res.json({success: true, message: 'IDs added to Redis'});
+	if (typeof req.body.list_ids == 'undefined') {
+		console.log('undefined list_ds');
+		res.json({success: false, message: 'No IDs to  add'});
+		return;
+	}
+	saveEncounters(req.body.list_ids, res);
 });
 
 router.get('/stream', function(req,res) { 
 	var newStream = new stream.PassThrough();
-	streams.push(newStream); 
+	streams.push(newStream);
 	newStream.pipe(res);
 
 	res.on('end', function() { 
@@ -66,11 +65,13 @@ app.listen(80);
 // HELPER METHODS
 // ===========
 
-var saveEncounters = function(list_ids){
-
+var saveEncounters = function(list_ids, res){
+	var cmb, a;
 	// remove duplicates ids from the array and slice it - maximum 32 ids for each request are supported
 	list_ids = removeDuplicates(list_ids).slice(0, 32);
-	cmb = combinatorics.combination(req.body.list_ids, 2); // create ids permutation
+	console.log('new ids: '+list_ids);
+	if (list_ids.length === 1) return;
+	cmb = combinatorics.combination(list_ids, 2); // create ids permutation
 	// and add them to redis
 	cmb.forEach(function(a){
 		if (a[0] !== a[1]){
@@ -80,10 +81,12 @@ var saveEncounters = function(list_ids){
 			redisClient.expire(key, 300); // expires in 5 minutes
 			// stream to the clients
 			streams.forEach(function(stream){
-				stream.write("ENGAGEMENT "+a[0]+" && "+a[1]); 
+				console.log("writing to stream");
+				stream.write("ENGAGEMENT "+a[0]+" && "+a[1]+'\n'); 
 			});
 		}
 	});
+	res.json({success: true, message: 'IDs added to Redis'});
 }
 
 var removeDuplicates = function(a) {
