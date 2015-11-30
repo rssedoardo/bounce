@@ -30,10 +30,16 @@ redisClient.on("connect", function () {
     console.log("Connection to Redis was successful!");
 });
 
-notificationRedisClient.psubscribe("__key*__:expire*");
+notificationRedisClient.on("subscribe", function (channel, count) {
+    console.log('Subscribed to "expired" messages');
+});
+
+notificationRedisClient.subscribe("__keyevent@0__:expired");
 
 notificationRedisClient.on("message", function (channel, message) {
-    console.log("notify channel " + channel + ": " + message);
+				    	streams.forEach(function(stream){
+						stream.write("DISENGAGEMENT "+message+'\n'); 
+					});
 });
 // ROUTER
 // ===========
@@ -46,7 +52,6 @@ router.get('/', function(req, res) {
 
 router.post('/encounter', function(req, res){
 	if (typeof req.body.list_ids == 'undefined') {
-		console.log('undefined list_ds');
 		res.json({success: false, message: 'No IDs to  add'});
 		return;
 	}
@@ -75,7 +80,6 @@ var saveEncounters = function(list_ids, res){
 	var cmb, a;
 	// remove duplicates ids from the array and slice it - maximum 32 ids for each request are supported
 	list_ids = removeDuplicates(list_ids).slice(0, 32);
-	console.log('new ids: '+list_ids);
 	if (list_ids.length === 1) return;
 	cmb = combinatorics.combination(list_ids, 2); // create ids permutation
 	// and add them to redis
@@ -87,7 +91,7 @@ var saveEncounters = function(list_ids, res){
 			    	// do nothing
 			    } else {
 			    	streams.forEach(function(stream){
-						console.log("writing to stream");
+				
 						stream.write("ENGAGEMENT "+key+'\n'); 
 					});
 			    }
