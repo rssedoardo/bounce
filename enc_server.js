@@ -76,14 +76,17 @@ var saveEncounters = function(list_ids, res){
 	cmb.forEach(function(a){
 		if (a[0] !== a[1]){
 			var key = a[0]+" && "+a[1];
+			redisClient.exists(key, function(err, reply) {
+			    if (reply === 1) {
+					streams.forEach(function(stream){
+						console.log("writing to stream");
+						stream.write("ENGAGEMENT "+key+'\n'); 
+					});
+			    }
+			});
 			// store and set or reset TTL
 			redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
 			redisClient.expire(key, 300); // expires in 5 minutes
-			// stream to the clients
-			streams.forEach(function(stream){
-				console.log("writing to stream");
-				stream.write("ENGAGEMENT "+a[0]+" && "+a[1]+'\n'); 
-			});
 		}
 	});
 	res.json({success: true, message: 'IDs added to Redis'});
