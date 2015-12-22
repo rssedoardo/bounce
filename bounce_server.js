@@ -5,6 +5,7 @@ var express    = require('express');
 var app        = express();                
 var fs         = require('fs');
 var https      = require('https');
+var http = require('http');
 var bodyParser = require('body-parser');
 var morgan     = require('morgan');
 var mongoose   = require('mongoose');
@@ -37,6 +38,16 @@ mongoose.connect(mongodb_uri); // connect to our database
 
 // Schemas
 var User     = require('./app/models/user');
+
+// CACHING ENCOUNTERS
+// =============================================================================
+var cache = {};
+
+http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
+  console.log("Got response: " + res);
+}).on('error', function(e) {
+  console.log("Got error: " + e.message);
+});
 
 // ROUTES
 // =============================================================================
