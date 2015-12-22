@@ -14,7 +14,7 @@ var UserSchema   = new Schema({
 			post: { type: ObjectId, ref: 'Post'},
 			timestamp: Date,
 			bounces: Number}],
-	saved_posts: [( other_user: { type: ObjectId, ref: 'User'},
+	saved_posts: [{ other_user: { type: ObjectId, ref: 'User'},
 			post: { type: ObjectId, ref: 'Post'},
 			timestamp: Date,
 			bounces: Number}],
