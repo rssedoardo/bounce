@@ -91,14 +91,14 @@ var saveEncounters = function(list_ids, res){
 			    	// do nothing
 			    } else {
 			    	streams.forEach(function(stream){
-				
-						stream.write("ENGAGEMENT "+key+'\n'); 
+			    		console.log('ENGAGEMENT '+key+'\n');
+						stream.write('ENGAGEMENT '+key+'\n'); 
 					});
 			    }
 			});
 			// store and set or reset TTL
 			redisClient.hmset(key, {'timestamp': new Date().getTime()}, redis.print);
-			redisClient.expire(key, 10); // expires in 5 minutes
+			redisClient.expire(key, 300); // expires in 5 minutes
 		}
 	});
 	res.json({success: true, message: 'IDs added to Redis'});
