@@ -46,7 +46,13 @@ var cache = {};
 var streamEncounters = function(){
 	http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
         res.on('data', function(chunk){
+<<<<<<< HEAD
                 var arr = chunk.trim().split(' ');
+=======
+                chunk = ''+chunk;
+		console.log(chunk);
+		var arr = chunk.trim().split(' ');
+>>>>>>> c69d08e94b68220a155a4104ab6eaf1be5ec2bcc
                 if (arr.length < 4){
                   console.log('Unable to parse stream from the encounter server');
                 
