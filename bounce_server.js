@@ -43,12 +43,22 @@ var User     = require('./app/models/user');
 // =============================================================================
 var cache = {};
 
-http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
-  console.log("Got response: " + res);
-}).on('error', function(e) {
-  console.log("Got error: " + e.message);
-});
+var streamEncounters = function(){
+	http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
+        res.on('data', function(chunk){
+                console.log(''+chunk);
+        });
+        res.on('end', function(){
+                console.log('Stream closed, reconnecting...');
+                streamEncounters();
+        });
+	}).on('error', function(e) {
+	  console.log("Got error: " + e.message +  '- Reconnecting');
+	  streamEncounters();
+	});
+}
 
+streamEncounters();
 // ROUTES
 // =============================================================================
 var router = express.Router();

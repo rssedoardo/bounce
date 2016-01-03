@@ -64,6 +64,7 @@ router.get('/stream', function(req,res) {
 	newStream.pipe(res);
 
 	res.on('end', function() { 
+		console.log('closing');
 		streams.splice(streams.indexOf(newStream),1); 
 	}); 
 }); 
@@ -90,8 +91,7 @@ var saveEncounters = function(list_ids, res){
 			    if (reply === 1) {
 			    	// do nothing
 			    } else {
-			    	streams.forEach(function(stream){
-			    		console.log('ENGAGEMENT '+key+'\n');
+				streams.forEach(function(stream){
 						stream.write('ENGAGEMENT '+key+'\n'); 
 					});
 			    }
