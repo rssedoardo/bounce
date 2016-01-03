@@ -46,7 +46,36 @@ var cache = {};
 var streamEncounters = function(){
 	http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
         res.on('data', function(chunk){
-                console.log(''+chunk);
+                var arr = chunk.split(' ');
+                if (arr.length < 4){
+                  console.log('Unable to parse stream from the encounter server');
+                
+                } else if (arr[0] == 'ENGAGEMENT'){
+                  if (arr[1] in cache){
+                    cache[arr[1]].push(arr[3]);
+                  } else {
+                    cache[arr[1]] = [arr[3]];
+                  }
+                  if (arr[3] in cache){
+                    cache[arr[3]].push(arr[1]);
+                  } else {
+                    cache[arr[3]] = [arr[1]];
+                  }
+                  
+                } else if (arr[0] == 'DISENGAGEMENT'){
+                  console.log(cache);
+                  if (arr[1] in cache){
+                    index = cache[arr[1]].indexOf(arr[3]);
+                    if (index > -1) cache[arr[1]].splice(index, 1);
+                    if (cache[arr[1]].length == 0) delete cache[arr[1]]; // remove property if needed
+                  }
+                  if (arr[3] in cache){
+                    index = cache[arr[3]].indexOf(arr[1]);
+                    if (index > -1) cache[arr[3]].splice(index, 1);
+                    if (cache[arr[3]].length == 0) delete cache[arr[3]]; // remove property if needed
+                  }
+                  console.log(cache);
+                }
         });
         res.on('end', function(){
                 console.log('Stream closed, reconnecting...');
