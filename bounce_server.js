@@ -46,7 +46,7 @@ var cache = {};
 var streamEncounters = function(){
 	http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
         res.on('data', function(chunk){
-                var arr = chunk.split(' ');
+                var arr = chunk.trim().split(' ');
                 if (arr.length < 4){
                   console.log('Unable to parse stream from the encounter server');
                 
@@ -185,6 +185,12 @@ router.use(function(req, res, next) {
   }
 });
 
+router.route('/around')    
+   
+    .get(function(req, res) {
+        res.json(cache[req.decoded]);
+    }
+);
 // more routes for our API will happen here
 
 // REGISTER OUR ROUTES -------------------------------
