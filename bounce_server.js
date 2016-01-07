@@ -156,14 +156,19 @@ router.route('/user/login').post(function(req, res) {
 });
 
 router.route('/beacon/available').post(function(req, res) {
+		beacons = req.body.beacons;
 		availableBeacons = [];
 		console.log(req.body);
-		for (beacon in req.body.beacons) {
-		   	User.findOne({
-				beacon_id: beacon
+		for (beacon in beacons) {
+			User.findOne({
+				beacon_id: beacons[beacon]
 			}, function(err, user) {
 				if (err) throw err;
-				if (!user) availableBeacons.push(beacon);
+				if (!user){
+					 availableBeacons.push(beacons[beacon]);
+					console.log('not a user');
+					console.log(availableBeacons);
+				}
 			});
 		}
 		res.json({ success: true, beacons: availableBeacons }); 
