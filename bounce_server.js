@@ -159,20 +159,22 @@ router.route('/user/login').post(function(req, res) {
 router.route('/beacon/available').post(function(req, res) {
 		beacons = req.body.beacons;
 		availableBeacons = [];
-		console.log(req.body);
 		async_calls = [];
 		for (beacon in beacons) {
-			async_calls.push(function() {
+			async_calls.push(function(cb) {
 				User.findOne({
 					beacon_id: beacons[beacon]
 				}, function(err, user) {
-					if (err) throw callback(err);
-					if (!user) availableBeacons.push(beacons[beacon]);
+					if (err) cb(err);
+					if (!user) {
+						availableBeacons.push(beacons[beacon]);
+						cb(null);
+					}
 				});
 			});
 		}
 
-		async.parallel(calls, function(err, result) {
+		async.parallel(async_calls, function(err, result) {
 		    if (err) return console.log(err);
 		    res.json({ success: true, beacons: availableBeacons }); 
 		});
