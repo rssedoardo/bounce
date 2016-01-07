@@ -157,13 +157,13 @@ router.route('/user/login').post(function(req, res) {
 
 router.route('/beacon/available').post(function(req, res) {
 		availableBeacons = [];
+		console.log(req.body);
 		for (beacon in req.body.beacons) {
 		   	User.findOne({
-				beacon: beacon
+				beacon_id: beacon
 			}, function(err, user) {
 				if (err) throw err;
 				if (!user) availableBeacons.push(beacon);
-
 			});
 		}
 		res.json({ success: true, beacons: availableBeacons }); 
@@ -240,7 +240,7 @@ router.route('/post/create').post(function(req, res) {
 			user.user_posts.push(post._id);
 			user.total_bounces += bounceCounts;
 			user.save();
-		});
+		}
 	});
 	
 	return res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
