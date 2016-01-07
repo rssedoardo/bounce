@@ -12,6 +12,7 @@ var mongoose   = require('mongoose');
 var jwt	       = require('jsonwebtoken');
 var crypto     = require('crypto');
 var env        = require('node-env-file');
+var async 	   = require('async');
 
 // BodyParser let us get the data from a POST req
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -159,19 +160,22 @@ router.route('/beacon/available').post(function(req, res) {
 		beacons = req.body.beacons;
 		availableBeacons = [];
 		console.log(req.body);
+		async_calls = [];
 		for (beacon in beacons) {
-			User.findOne({
-				beacon_id: beacons[beacon]
-			}, function(err, user) {
-				if (err) throw err;
-				if (!user){
-					 availableBeacons.push(beacons[beacon]);
-					console.log('not a user');
-					console.log(availableBeacons);
-				}
+			async_calls.push(function() {
+				User.findOne({
+					beacon_id: beacons[beacon]
+				}, function(err, user) {
+					if (err) throw callback(err);
+					if (!user) availableBeacons.push(beacons[beacon]);
+				});
 			});
 		}
-		res.json({ success: true, beacons: availableBeacons }); 
+
+		async.parallel(calls, function(err, result) {
+		    if (err) return console.log(err);
+		    res.json({ success: true, beacons: availableBeacons }); 
+		});
 });
 
 // MIDDLEWARE to verify a token
