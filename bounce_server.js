@@ -6,14 +6,14 @@ var express    = require('express');
 var app        = express();                
 var fs         = require('fs');
 var https      = require('https');
-var http = require('http');
+var http       = require('http');
 var bodyParser = require('body-parser');
 var morgan     = require('morgan');
 var mongoose   = require('mongoose');
 var jwt	       = require('jsonwebtoken');
 var crypto     = require('crypto');
 var env        = require('node-env-file');
-var async 	   = require('async');
+var async      = require('async');
 
 // BodyParser let us get the data from a POST req
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -59,12 +59,12 @@ var streamEncounters = function(){
 				console.log('Unable to parse stream from the encounter server');
 				
 			} else if (arr[0] == 'ENGAGEMENT'){
-				if (arr[1] in cache && arr[3] not in cache[arr[1]]){
+				if (arr[1] in cache && !(arr[3] in cache[arr[1]])){
 					cache[arr[1]].push(arr[3]);
 				} else {
 					cache[arr[1]] = [arr[3]];
 				}
-				if (arr[3] in cache && arr[1] not in cache[arr[3]]){
+				if (arr[3] in cache && !(arr[1] in cache[arr[3]])){
 					cache[arr[3]].push(arr[1]);
 				} else {
 					cache[arr[3]] = [arr[1]];
