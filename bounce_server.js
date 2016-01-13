@@ -1,3 +1,4 @@
+// =============================================================================
 // SETUP
 // =============================================================================
 
@@ -180,7 +181,10 @@ router.route('/beacon/available').post(function(req, res) {
 		});
 });
 
+// =============================================================================
 // MIDDLEWARE to verify a token
+// =============================================================================
+
 router.use(function(req, res, next) {
 
   // check header or url parameters or post parameters for token
@@ -212,6 +216,7 @@ router.use(function(req, res, next) {
 
 router.route('/post/create').post(function(req, res) {
 	
+	async_calls = [];
 	beacons = cache[req.decoded];
 	date = new Date();
 	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to create the post, no people around"});
@@ -225,43 +230,51 @@ router.route('/post/create').post(function(req, res) {
 	// and bounce for the first time
 	var bounceCounts = 0;
 	for (beacon in beacons) {
-		User.findOne({
-			beacon: beacon
-		}, function(err, user) {
-			if (err) throw err;
-			if (user) {
-				post.subscribers.push(user._id); // subscribe to post
-				bounceCounts++;
-				var temp = { other_user: user._id,
-							post: post._id,
-							timestamp: date,
-							bounces: 1};
-				user.timeline.push(temp); // and update timeline
-			}
-			user.save();
+		async_calls.push(function(cb) {
+			User.findOne({
+				beacon_id: beacons[beacon]
+			}, function(err, user) {
+				if (err) cb(err);
+				if (user) {
+					post.subscribers.push(user._id); // subscribe to post
+					bounceCounts++;
+					var temp = { other_user: user._id,
+								post: post._id,
+								timestamp: date,
+								bounces: 1};
+					user.timeline.push(temp); // and update timeline
+					user.save();
+					cb(null);
+				}
+			});
 		});
-	}
-	post.save();
-	// update owner:
-	User.findOne({
-		username: req.decoded
-	}, function(err, user) {
-		if (err) throw err;
-		if (user) {
-			user.user_posts.push(post._id);
-			user.total_bounces += bounceCounts;
-			user.save();
-		}
+
+	async.parallel(async_calls, function(err, result) {
+	    if (err) return console.log(err);
+	    	post.save();
+	    	// update owner:
+	    	User.findOne({
+				username: req.decoded
+			}, function(err, user) {
+				if (err) throw err;
+				if (user) {
+					user.user_posts.push(post._id);
+					user.total_bounces += bounceCounts;
+					user.save();
+				}
+			});
+			res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
 	});
-	
-	return res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
 });
 
 router.route('/beacon/around').get(function(req, res) {
 	res.json(cache[req.decoded]);
 });
 
+// =============================================================================
 // REGISTER ROUTES
+// =============================================================================
+
 app.use('/api', router); // all of our routes will be prefixed with /api
 
 // =============================================================================
