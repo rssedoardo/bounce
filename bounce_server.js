@@ -248,6 +248,7 @@ router.route('/post/create').post(function(req, res) {
 				}
 			});
 		});
+	}
 
 	async.parallel(async_calls, function(err, result) {
 	    if (err) return console.log(err);
