@@ -59,12 +59,12 @@ var streamEncounters = function(){
 				console.log('Unable to parse stream from the encounter server');
 				
 			} else if (arr[0] == 'ENGAGEMENT'){
-				if (arr[1] in cache && !(arr[3] in cache[arr[1]])){
+				if (arr[1] in cache && cache[arr[1]].indexOf(arr[3]) != -1){
 					cache[arr[1]].push(arr[3]);
 				} else {
 					cache[arr[1]] = [arr[3]];
 				}
-				if (arr[3] in cache && !(arr[1] in cache[arr[3]])){
+				if (arr[3] in cache && cache[arr[3]].indexOf(arr[1]) != -1){
 					cache[arr[3]].push(arr[1]);
 				} else {
 					cache[arr[3]] = [arr[1]];
@@ -149,7 +149,8 @@ router.route('/user/login').post(function(req, res) {
 					res.json({
 						success: true,
 						message: 'Enjoy your token!',
-						token: token
+						token: token,
+						beacon_id: user.beacon_id
 					});
 				}
 			});
@@ -203,7 +204,7 @@ router.use(function(req, res, next) {
 			return res.json({ success: false, message: 'Failed to authenticate token.' });    
 		} else {
 			// if everything is good, save to request and call next function
-			req.decoded = decoded;    
+			req.body.decoded = decoded;    
 			next();
 		}
 	});
@@ -221,15 +222,14 @@ router.use(function(req, res, next) {
 router.route('/post/create').post(function(req, res) {
 	
 	async_calls = [];
-	beacons = cache[req.decoded];
-	console.log(beacons);
-	console.log(req.decoded);
+	beacons = cache[req.body.beacon_id];
+
 	date = new Date();
 	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to create the post, no people around"});
 	// create initial post
 	var post  = new Post({
 		content: req.body.content,
-		owner: req.decoded,
+		owner: req.body.decoded,
 		timestamp: date,
 		likes: 0,
 		subscribers: []
@@ -262,7 +262,7 @@ router.route('/post/create').post(function(req, res) {
 	    	post.save();
 	    	// update owner:
 	    	User.findOne({
-				username: req.decoded
+				username: req.body.decoded
 			}, function(err, user) {
 				if (err) throw err;
 				if (user) {
@@ -276,7 +276,7 @@ router.route('/post/create').post(function(req, res) {
 });
 
 router.route('/beacon/around').get(function(req, res) {
-	res.json(cache[req.decoded]);
+	res.json(cache[req.body.decoded]);
 });
 
 // =============================================================================
