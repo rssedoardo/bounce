@@ -222,6 +222,8 @@ router.route('/post/create').post(function(req, res) {
 	
 	async_calls = [];
 	beacons = cache[req.decoded];
+	console.log(beacons);
+	console.log(req.decoded);
 	date = new Date();
 	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to create the post, no people around"});
 	// create initial post
