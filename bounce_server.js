@@ -59,12 +59,12 @@ var streamEncounters = function(){
 				console.log('Unable to parse stream from the encounter server');
 				
 			} else if (arr[0] == 'ENGAGEMENT'){
-				if (arr[1] in cache){
+				if (arr[1] in cache && arr[3] not in cache[arr[1]]){
 					cache[arr[1]].push(arr[3]);
 				} else {
 					cache[arr[1]] = [arr[3]];
 				}
-				if (arr[3] in cache){
+				if (arr[3] in cache && arr[1] not in cache[arr[3]]){
 					cache[arr[3]].push(arr[1]);
 				} else {
 					cache[arr[3]] = [arr[1]];
