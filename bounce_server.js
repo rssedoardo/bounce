@@ -181,6 +181,10 @@ router.route('/beacon/available').post(function(req, res) {
 		});
 });
 
+router.route('/beacon/cache').get(function(req, res) {
+	res.json(cache);
+});
+
 // =============================================================================
 // MIDDLEWARE to verify a token
 // =============================================================================
