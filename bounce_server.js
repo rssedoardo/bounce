@@ -59,12 +59,12 @@ var streamEncounters = function(){
 				console.log('Unable to parse stream from the encounter server');
 				
 			} else if (arr[0] == 'ENGAGEMENT'){
-				if (arr[1] in cache && cache[arr[1]].indexOf(arr[3]) != -1){
+				if (arr[1] in cache && cache[arr[1]].indexOf(arr[3]) == -1){
 					cache[arr[1]].push(arr[3]);
 				} else {
 					cache[arr[1]] = [arr[3]];
 				}
-				if (arr[3] in cache && cache[arr[3]].indexOf(arr[1]) != -1){
+				if (arr[3] in cache && cache[arr[3]].indexOf(arr[1]) == -1){
 					cache[arr[3]].push(arr[1]);
 				} else {
 					cache[arr[3]] = [arr[1]];
@@ -220,7 +220,6 @@ router.use(function(req, res, next) {
 });
 
 router.route('/post/create').post(function(req, res) {
-	
 	async_calls = [];
 	beacons = cache[req.body.beacon_id];
 
