@@ -40,8 +40,9 @@ var mongodb_uri = 'mongodb://localhost:27017/local'
 mongoose.connect(mongodb_uri); // connect to our database
 
 // Schemas
-var User     = require('./app/models/user');
-var Post     = require('./app/models/post');
+var models = require('./app/models/schemas');
+var User     = mongoose.model('User');
+var Post     = mongoose.model('Post');
 
 // =============================================================================
 // CACHING SYSTEM
@@ -190,8 +191,14 @@ router.route('/user/all').get(function(req, res) {
 	User.findOne({
 				username: req.body.username
 			}, function(err, user) {
-				if (err) cb(err);
+				if (err) console.log(err);
 				if (user) {
+					user.populate('timeline.post')
+						.exec(function (err, story) {
+						  if (err) return console.log(err);
+						  res.json(user);
+						  // prints "The creator is Aaron"
+						});
 					res.json(user);
 				} else {
 					res.json({success : false});
