@@ -3,6 +3,17 @@ var crypto	 = require('crypto');
 var Schema       = mongoose.Schema;
 var ObjectId	 = Schema.ObjectId;
 
+var PostSchema   = new Schema({
+        content: String,
+	owner: { type: ObjectId, ref: 'User'},
+	timestamp: Date,
+	likes: [{ type: ObjectId, unique: true,  ref: 'User'}],
+	subscribers: [{ type: ObjectId, unique: true, ref: 'User'}],
+	comments: [{ user: {type: ObjectId, ref: 'User'},
+			timestamp: Date,
+			comment: String}]
+});
+
 var UserSchema   = new Schema({
 	username: { type :  String, lowercase: true,  unique: true},
 	password: String,
@@ -76,3 +87,4 @@ UserSchema.methods.comparePassword = function(candidatePass, cb){
 };
  
 module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('Postt', PostSchema);
