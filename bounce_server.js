@@ -186,6 +186,19 @@ router.route('/beacon/cache').get(function(req, res) {
 	res.json(cache);
 });
 
+router.route('/user/all').get(function(req, res) {
+	User.findOne({
+				username: req.body.username
+			}, function(err, user) {
+				if (err) cb(err);
+				if (user) {
+					res.json(user);
+				} else {
+					res.json({success : false});
+				}
+			});
+});
+
 // =============================================================================
 // MIDDLEWARE to verify a token
 // =============================================================================
@@ -266,6 +279,52 @@ router.route('/post/create').post(function(req, res) {
 				if (err) throw err;
 				if (user) {
 					user.user_posts.push(post._id);
+					user.total_bounces += bounceCounts;
+					user.save();
+				}
+			});
+			res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
+	});
+});
+
+router.route('/post/bounce').post(function(req, res) {
+	
+	async_calls = [];
+	beacons = cache[req.body.beacon_id];
+
+	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to bounce the post, no people around"});
+	
+	var tmp = { other_user: req.body.other_user,
+			post: req.body.post,
+			timestamp: new Date(),
+			bounces: req.body.bounces+1};
+	
+	var bounceCounts = 0;
+	for (beacon in beacons) {
+		async_calls.push(function(cb) {
+			User.findOne({
+				beacon_id: beacons[beacon]
+			}, function(err, user) {
+				if (err) cb(err);
+				if (user) {
+					//TODO subscribe to post
+					bounceCounts++;
+					user.timeline.push(temp); // and update timeline
+					user.save();
+					cb(null);
+				}
+			});
+		});
+	}
+
+	async.parallel(async_calls, function(err, result) {
+	    if (err) return console.log(err);
+	    	// update owner:
+	    	User.findOne({
+				username: req.body.decoded
+			}, function(err, user) {
+				if (err) throw err;
+				if (user) {
 					user.total_bounces += bounceCounts;
 					user.save();
 				}
