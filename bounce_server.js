@@ -84,14 +84,14 @@ var streamEncounters = function(){
 				}
 			}
 		});
-		res.on('end', function(){
-			console.log('Stream closed, reconnecting...');
-			streamEncounters();
-		});
-	}).on('error', function(e) {
-		console.log("Got error: " + e.message + ' - reconnecting');
-		streamEncounters();
-	});
+res.on('end', function(){
+	console.log('Stream closed, reconnecting...');
+	streamEncounters();
+});
+}).on('error', function(e) {
+	console.log("Got error: " + e.message + ' - reconnecting');
+	streamEncounters();
+});
 }
 
 streamEncounters();
@@ -125,7 +125,7 @@ router.route('/user/register').post(function(req, res) {
 			res.json({success: false, message: err.message});
 		} else res.json({success: true,  message: 'User created!', username: user.username});
 	});
-		
+	
 });
 
 router.route('/user/login').post(function(req, res) {
@@ -157,30 +157,30 @@ router.route('/user/login').post(function(req, res) {
 			});
 			}
 		});
-});
+	});
 
 router.route('/beacon/available').post(function(req, res) {
-		beacons = req.body.beacons;
-		availableBeacons = [];
-		async_calls = [];
-		for (beacon in beacons) {
-			async_calls.push(function(cb) {
-				User.findOne({
-					beacon_id: beacons[beacon]
-				}, function(err, user) {
-					if (err) cb(err);
-					if (!user) {
-						availableBeacons.push(beacons[beacon]);
-						cb(null);
-					}
-				});
+	beacons = req.body.beacons;
+	availableBeacons = [];
+	async_calls = [];
+	for (beacon in beacons) {
+		async_calls.push(function(cb) {
+			User.findOne({
+				beacon_id: beacons[beacon]
+			}, function(err, user) {
+				if (err) cb(err);
+				if (!user) {
+					availableBeacons.push(beacons[beacon]);
+					cb(null);
+				}
 			});
-		}
-
-		async.parallel(async_calls, function(err, result) {
-		    if (err) return console.log(err);
-		    res.json({ success: true, beacons: availableBeacons }); 
 		});
+	}
+
+	async.parallel(async_calls, function(err, result) {
+		if (err) return console.log(err);
+		res.json({ success: true, beacons: availableBeacons }); 
+	});
 });
 
 router.route('/beacon/cache').get(function(req, res) {
@@ -188,19 +188,13 @@ router.route('/beacon/cache').get(function(req, res) {
 });
 
 router.route('/user/all').get(function(req, res) {
-	console.log(req.query);
 	User.findOne({
-				username: req.query.username
-			}).populate('timeline.post')
-						.exec(function (err, user) {
-						  if (err) return console.log(err);
-						  res.json(user);
-						  // prints "The creator is Aaron"
-						});
-					//res.json(user);
-			//	} else {
-				//	res.json({success : false});
-				//}
+		username: req.query.username
+	}).populate('timeline.post')
+	.exec(function (err, user) {
+		if (err) return console.log(err);
+		res.json(user);
+	});
 });
 
 // =============================================================================
@@ -236,6 +230,7 @@ router.use(function(req, res, next) {
 }
 });
 
+// POST CREATION
 router.route('/post/create').post(function(req, res) {
 	async_calls = [];
 	beacons = cache[req.body.beacon_id];
@@ -250,7 +245,6 @@ router.route('/post/create').post(function(req, res) {
 	});
 	// and bounce for the first time
 	var bounceCounts = 0;
-	console.log(beacons);
 	for (beacon in beacons) {
 		async_calls.push(function(cb) {
 			User.findOne({
@@ -261,9 +255,9 @@ router.route('/post/create').post(function(req, res) {
 					post.subscribers.push(user._id); // subscribe to post
 					bounceCounts++;
 					var temp = { other_user: user._id,
-								post: post._id,
-								timestamp: date,
-								bounces: 1};
+						post: post._id,
+						timestamp: date,
+						bounces: 1};
 					user.timeline.push(temp); // and update timeline
 					user.save();
 					cb();
@@ -273,31 +267,24 @@ router.route('/post/create').post(function(req, res) {
 	}
 
 	async.parallel(async_calls, function(err, result) {
-	    if (err) return console.log(err);
-	    	post.save(function(err, post){
-			console.log(err);
-		});
+		if (err) return console.log(err);
 	    	// update owner:
 	    	User.findOne({
-				username: req.body.decoded
-			}, function(err, user) {
-				if (err) throw err;
-				if (user) {
-					user.user_posts.push(post._id);
-					user.total_bounces += bounceCounts;
-					user.save();
-					post.owner = user._id;
-				        post.save(function(err, post){
-                        			if (err){
-                                			console.log(err);
-                        			} else {
-                               				console.log('saved fraking post');
-                        			}		
-                			});
-				}
-			});
-			res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
-	});
+	    		username: req.body.decoded
+	    	}, function(err, user) {
+	    		if (err) throw err;
+	    		if (user) {
+	    			user.user_posts.push(post._id);
+	    			user.total_bounces += bounceCounts;
+	    			user.save();
+	    			post.owner = user._id;
+	    			post.save(function(err, post){
+	    				if (err) console.log(err)
+	    					res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
+	    			});
+	    		}
+	    	});
+	    });
 });
 
 router.route('/post/bounce').post(function(req, res) {
@@ -308,18 +295,18 @@ router.route('/post/bounce').post(function(req, res) {
 	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to bounce the post, no people around"});
 	
 	var tmp = { other_user: req.body.other_user,
-			post: req.body.post,
-			timestamp: new Date(),
-			bounces: req.body.bounces+1};
-	
-	var bounceCounts = 0;
-	for (beacon in beacons) {
-		async_calls.push(function(cb) {
-			User.findOne({
-				beacon_id: beacons[beacon]
-			}, function(err, user) {
-				if (err) cb(err);
-				if (user) {
+		post: req.body.post,
+		timestamp: new Date(),
+		bounces: req.body.bounces+1};
+		
+		var bounceCounts = 0;
+		for (beacon in beacons) {
+			async_calls.push(function(cb) {
+				User.findOne({
+					beacon_id: beacons[beacon]
+				}, function(err, user) {
+					if (err) cb(err);
+					if (user) {
 					//TODO subscribe to post
 					bounceCounts++;
 					user.timeline.push(temp); // and update timeline
@@ -327,27 +314,39 @@ router.route('/post/bounce').post(function(req, res) {
 					cb(null);
 				}
 			});
-		});
-	}
+			});
+		}
 
-	async.parallel(async_calls, function(err, result) {
-	    if (err) return console.log(err);
+		async.parallel(async_calls, function(err, result) {
+			if (err) return console.log(err);
 	    	// update owner:
 	    	User.findOne({
-				username: req.body.decoded
-			}, function(err, user) {
-				if (err) throw err;
-				if (user) {
-					user.total_bounces += bounceCounts;
-					user.save();
-				}
-			});
-			res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
+	    		username: req.body.decoded
+	    	}, function(err, user) {
+	    		if (err) throw err;
+	    		if (user) {
+	    			user.total_bounces += bounceCounts;
+	    			user.save();
+	    		}
+	    	});
+	    	res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
+	    });
 	});
-});
 
+// GET PEOPLE AROUND THE USER
 router.route('/beacon/around').get(function(req, res) {
 	res.json(cache[req.body.decoded]);
+});
+
+// GET USER'S TIMELINE
+router.route('/user/timeline').get(function(req, res) {
+	User.findOne({
+		username: req.body.decoded
+	}).populate('timeline.post')
+	.exec(function (err, user) {
+		if (err) return console.log(err);
+		res.json(user.timeline);
+	});
 });
 
 // =============================================================================
