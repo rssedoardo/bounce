@@ -54,7 +54,7 @@ var streamEncounters = function(){
 	http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
 		res.on('data', function(chunk){
 			chunk = ''+chunk;
-			console.log(chunk);
+			//console.log(chunk);
 			var arr = chunk.trim().split(' ');
 			if (arr.length < 4){
 				console.log('Unable to parse stream from the encounter server');
@@ -188,22 +188,19 @@ router.route('/beacon/cache').get(function(req, res) {
 });
 
 router.route('/user/all').get(function(req, res) {
+	console.log(req.query);
 	User.findOne({
-				username: req.body.username
-			}, function(err, user) {
-				if (err) console.log(err);
-				if (user) {
-					user.populate('timeline.post')
-						.exec(function (err, story) {
+				username: req.query.username
+			}).populate('timeline.post')
+						.exec(function (err, user) {
 						  if (err) return console.log(err);
 						  res.json(user);
 						  // prints "The creator is Aaron"
 						});
-					res.json(user);
-				} else {
-					res.json({success : false});
-				}
-			});
+					//res.json(user);
+			//	} else {
+				//	res.json({success : false});
+				//}
 });
 
 // =============================================================================
@@ -242,19 +239,18 @@ router.use(function(req, res, next) {
 router.route('/post/create').post(function(req, res) {
 	async_calls = [];
 	beacons = cache[req.body.beacon_id];
-
 	date = new Date();
 	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to create the post, no people around"});
 	// create initial post
 	var post  = new Post({
 		content: req.body.content,
-		owner: req.body.decoded,
 		timestamp: date,
-		likes: 0,
+		likes: [],
 		subscribers: []
 	});
 	// and bounce for the first time
 	var bounceCounts = 0;
+	console.log(beacons);
 	for (beacon in beacons) {
 		async_calls.push(function(cb) {
 			User.findOne({
@@ -270,7 +266,7 @@ router.route('/post/create').post(function(req, res) {
 								bounces: 1};
 					user.timeline.push(temp); // and update timeline
 					user.save();
-					cb(null);
+					cb();
 				}
 			});
 		});
@@ -278,7 +274,9 @@ router.route('/post/create').post(function(req, res) {
 
 	async.parallel(async_calls, function(err, result) {
 	    if (err) return console.log(err);
-	    	post.save();
+	    	post.save(function(err, post){
+			console.log(err);
+		});
 	    	// update owner:
 	    	User.findOne({
 				username: req.body.decoded
@@ -288,6 +286,14 @@ router.route('/post/create').post(function(req, res) {
 					user.user_posts.push(post._id);
 					user.total_bounces += bounceCounts;
 					user.save();
+					post.owner = user._id;
+				        post.save(function(err, post){
+                        			if (err){
+                                			console.log(err);
+                        			} else {
+                               				console.log('saved fraking post');
+                        			}		
+                			});
 				}
 			});
 			res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
