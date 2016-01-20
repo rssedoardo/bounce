@@ -5,11 +5,11 @@ var ObjectId	 = Schema.ObjectId;
 
 var PostSchema   = new Schema({
         content: String,
-	owner: { type: ObjectId, ref: 'User'},
+	owner: { type: String},
 	timestamp: Date,
-	likes: [{ type: ObjectId, unique: true,  ref: 'User'}],
-	subscribers: [{ type: ObjectId, unique: true, ref: 'User'}],
-	comments: [{ user: {type: ObjectId, ref: 'User'},
+	likes: [{ type: String, unique: true}],
+	subscribers: [{ type: String, unique: true}],
+	comments: [{ user: String,
 			timestamp: Date,
 			comment: String}]
 });
@@ -21,7 +21,7 @@ var UserSchema   = new Schema({
 	email: { type: String, unique: true},
 	beacon_id: String,
 	total_bounces: Number,
-	timeline: [{ other_user: { type: ObjectId, ref: 'User'},
+	timeline: [{ other_user: String,
 			post: { type: ObjectId, ref: 'Post'},
 			timestamp: Date,
 			bounces: Number}],
