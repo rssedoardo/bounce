@@ -241,7 +241,8 @@ router.route('/post/create').post(function(req, res) {
 		content: req.body.content,
 		timestamp: date,
 		likes: [],
-		subscribers: []
+		subscribers: [],
+		comment: []
 	});
 	// and bounce for the first time
 	var bounceCounts = 0;
@@ -277,7 +278,7 @@ router.route('/post/create').post(function(req, res) {
 	    			user.user_posts.push(post._id);
 	    			user.total_bounces += bounceCounts;
 	    			user.save();
-	    			post.owner = user._id;
+	    			post.owner = user.username;
 	    			post.save(function(err, post){
 	    				if (err) console.log(err)
 	    					res.json({success: true, bounces: bounceCounts, message: "Post successfully created and bounced!"});
@@ -339,14 +340,15 @@ router.route('/beacon/around').get(function(req, res) {
 });
 
 // GET USER'S TIMELINE
+// GET USER'S TIMELINE
 router.route('/user/timeline').get(function(req, res) {
-	User.findOne({
-		username: req.body.decoded
-	}).populate('timeline.post')
-	.exec(function (err, user) {
-		if (err) return console.log(err);
-		res.json(user.timeline);
-	});
+        User.findOne({
+                username: req.body.decoded
+        }).populate('timeline.post')
+        .exec(function (err, user) {
+            if (err) return console.log(err);
+\			res.json(user.timeline);
+        });
 });
 
 // =============================================================================
