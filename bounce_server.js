@@ -246,14 +246,14 @@ router.route('/post/create').post(function(req, res) {
 	});
 	// and bounce for the first time
 	var bounceCounts = 0;
-	for (beacon in beacons) {
-		async_calls.push((function(cb, beacon) {
-			console.log('Finding user with beacon: '+beacon)
-			User.findOne({
-				beacon_id: beacon
-			}, function(err, user) {
-				if (err) cb(err);
-				if (user) {
+
+	async.each(beacons, function (beacon, cb){ 
+		console.log('Finding user with beacon: '+beacon)
+		User.findOne({
+			beacon_id: beacon
+		}, function(err, user) {
+			if (err) cb(err);
+			if (user) {
 					post.subscribers.push(user._id); // subscribe to post
 					bounceCounts++;
 					var temp = { other_user: user._id,
@@ -265,10 +265,7 @@ router.route('/post/create').post(function(req, res) {
 					cb();
 				}
 			});
-		})(beacons[beacon]));
-	}
-
-	async.parallel(async_calls, function(err, result) {
+	}, function (err){
 		if (err) return console.log(err);
 	    	// update owner:
 	    	User.findOne({
