@@ -247,9 +247,10 @@ router.route('/post/create').post(function(req, res) {
 	// and bounce for the first time
 	var bounceCounts = 0;
 	for (beacon in beacons) {
-		async_calls.push(function(cb, beacon) {
+		async_calls.push((function(cb, beacon) {
+			console.log('Finding user with beacon: '+beacon)
 			User.findOne({
-				beacon_id: beacons[beacon]
+				beacon_id: beacon
 			}, function(err, user) {
 				if (err) cb(err);
 				if (user) {
@@ -264,7 +265,7 @@ router.route('/post/create').post(function(req, res) {
 					cb();
 				}
 			});
-		});
+		})(beacons[beacon]));
 	}
 
 	async.parallel(async_calls, function(err, result) {
@@ -346,7 +347,7 @@ router.route('/user/timeline').get(function(req, res) {
         }).populate('timeline.post')
         .exec(function (err, user) {
             if (err) return console.log(err);
-\			res.json(user.timeline.reverse());
+			res.json(user.timeline.reverse());
         });
 });
 
