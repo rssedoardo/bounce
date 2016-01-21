@@ -247,7 +247,7 @@ router.route('/post/create').post(function(req, res) {
 	// and bounce for the first time
 	var bounceCounts = 0;
 	for (beacon in beacons) {
-		async_calls.push(function(cb) {
+		async_calls.push(function(cb, beacon) {
 			User.findOne({
 				beacon_id: beacons[beacon]
 			}, function(err, user) {
@@ -340,14 +340,13 @@ router.route('/beacon/around').get(function(req, res) {
 });
 
 // GET USER'S TIMELINE
-// GET USER'S TIMELINE
 router.route('/user/timeline').get(function(req, res) {
         User.findOne({
                 username: req.body.decoded
         }).populate('timeline.post')
         .exec(function (err, user) {
             if (err) return console.log(err);
-\			res.json(user.timeline);
+\			res.json(user.timeline.reverse());
         });
 });
 
