@@ -252,6 +252,8 @@ router.route('/post/create').post(function(req, res) {
 		User.findOne({
 			beacon_id: beacon
 		}, function(err, user) {
+			console.log(err);
+			console.log(user);
 			if (err) cb(err);
 			if (user) {
 					post.subscribers.push(user._id); // subscribe to post
@@ -262,10 +264,14 @@ router.route('/post/create').post(function(req, res) {
 						bounces: 1};
 					user.timeline.push(temp); // and update timeline
 					user.save();
-					cb();
-				}
-			});
+					console.log('closing this call...');
+					cb(null);
+			} else {
+				cb(null); // no user	
+			}
+		});
 	}, function (err){
+		console.log('final cb called');
 		if (err) return console.log(err);
 	    	// update owner:
 	    	User.findOne({
