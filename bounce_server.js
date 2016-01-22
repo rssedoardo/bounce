@@ -169,11 +169,8 @@ router.route('/beacon/available').post(function(req, res) {
 			beacon_id: beacon
 		}, function(err, user) {
 			if (err) cb(err);
-			if (user) {
-				if (err) cb(err);
-				if (!user) availableBeacons.push(beacons[beacon]);
-				cb(null); // no user	
-			}
+			if (!user) availableBeacons.push(beacons[beacon]);
+			cb(null); // no user
 		});
 	}, function (err){
 		if (err) return console.log(err);
