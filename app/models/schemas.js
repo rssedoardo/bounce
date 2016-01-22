@@ -4,7 +4,8 @@ var Schema       = mongoose.Schema;
 var ObjectId	 = Schema.ObjectId;
 
 var PostSchema   = new Schema({
-        content: String,
+	total_bounces: Number,
+    content: String,
 	owner: { type: String},
 	timestamp: Date,
 	likes: [{ type: String, unique: true}],
