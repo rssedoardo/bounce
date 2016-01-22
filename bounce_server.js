@@ -252,16 +252,16 @@ router.route('/post/create').post(function(req, res) {
 		}, function(err, user) {
 			if (err) cb(err);
 			if (user) {
-					post.subscribers.push(user._id); // subscribe to post
+					post.subscribers.push(user.username); // subscribe to post
 					bounceCounts++;
-					var temp = { other_user: user._id,
+					var temp = { other_user: user.username,
 						post: post._id,
 						timestamp: date,
 						bounces: 1};
 					user.timeline.push(temp); // and update timeline
 					user.save();
 					cb(null);
-				} else {
+			} else {
 				cb(null); // no user	
 			}
 		});
@@ -295,10 +295,10 @@ router.route('/post/bounce').post(function(req, res) {
 
 	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to bounce the post, no people around"});
 	
-	var temp = { other_user: req.body.other_user,
+	var temp = { other_user: req.body.decoded,
 		post: req.body.post_id,
 		timestamp: new Date(),
-		bounces: req.body.bounces+1};
+		bounces: req.body.bounces + 1};
 		
 		var bounceCounts = 0;
 
