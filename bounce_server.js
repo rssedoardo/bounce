@@ -291,6 +291,7 @@ router.route('/post/bounce').post(function(req, res) {
 	
 	async_calls = [];
 	beacons = cache[req.body.beacon_id];
+	users = []
 
 	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to bounce the post, no people around"});
 	
@@ -307,8 +308,8 @@ router.route('/post/bounce').post(function(req, res) {
 			}, function(err, user) {
 				if (err) cb(err);
 				if (user) {
-					if (post.subscribers.indexOf(user.username) == -1) post.subscribers.push(user.username);
 					bounceCounts++;
+					users.push(user.username); // used later for subscribing
 					user.timeline.push(temp); // and update timeline
 					user.save();
 					cb(null);
@@ -330,6 +331,9 @@ router.route('/post/bounce').post(function(req, res) {
 							_id : req.body.post_id;
 						}, function(err, post){
 							if (err) console.log(err);
+							for (user in users){
+								if (post.subscribers.indexOf(users[user]) == -1) post.subscribers.push(user.username);
+							}
 							post.total_bounces += bounceCounts;
 							post.save(function(err, post){
 								if (err) console.log(err);
