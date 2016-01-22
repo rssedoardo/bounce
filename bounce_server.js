@@ -295,7 +295,7 @@ router.route('/post/bounce').post(function(req, res) {
 
 	if (typeof beacons == 'undefined' || beacons == []) return res.json({success: false, message: "Unable to bounce the post, no people around"});
 	
-	var tmp = { other_user: req.body.other_user,
+	var temp = { other_user: req.body.other_user,
 		post: req.body.post_id,
 		timestamp: new Date(),
 		bounces: req.body.bounces+1};
@@ -328,7 +328,7 @@ router.route('/post/bounce').post(function(req, res) {
 						user.total_bounces += bounceCounts;
 						user.save();
 						Post.findOne({
-							_id : req.body.post_id;
+							_id : req.body.post_id
 						}, function(err, post){
 							if (err) console.log(err);
 							for (user in users){
