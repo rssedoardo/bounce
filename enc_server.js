@@ -37,8 +37,11 @@ notificationRedisClient.on("subscribe", function (channel, count) {
 notificationRedisClient.subscribe("__keyevent@0__:expired");
 
 notificationRedisClient.on("message", function (channel, message) {
-				    	streams.forEach(function(stream){
-						stream.write("DISENGAGEMENT "+message+'\n'); 
+					// message == key, for example 'Beacon1 && Beacon2'
+					var values = message.trim().split(' ');
+					var tmp = { type: 'DISENGAGEMENT', values: [values[0], values[2]]};
+				    streams.forEach(function(stream){
+						stream.write(JSON.stringify(tmp)+'\n'); 
 					});
 });
 // ROUTER
@@ -91,8 +94,9 @@ var saveEncounters = function(list_ids, res){
 			    if (reply === 1) {
 			    	// do nothing
 			    } else {
-				streams.forEach(function(stream){
-						stream.write('ENGAGEMENT '+key+'\n'); 
+			    	var tmp = { type: 'ENGAGEMENT', values: [a[0], a[1]]};
+					streams.forEach(function(stream){
+						stream.write(JSON.stringify(tmp)+'\n'); 
 					});
 			    }
 			});
