@@ -348,8 +348,11 @@ router.route('/post/bounce').post(function(req, res) {
 
 // GET PEOPLE AROUND THE USER
 router.route('/beacon/around').get(function(req, res) {
-
-	beacons = Object.keys(cache[req.query.beacon_id]);
+	if (req.query.beacon_id in cache){
+		beacons = Object.keys(cache[req.query.beacon_id]);
+	} else {
+		return res.json({success: true, beacons: []});
+	}
 	usersBeacons = [];
 	async_calls = [];
 
@@ -365,8 +368,6 @@ router.route('/beacon/around').get(function(req, res) {
 		if (err) return console.log(err);
 		res.json({ success: true, beacons: usersBeacons }); 
 	});
-
-	res.json(cache[req.query.beacon_id]);
 });
 
 // GET USER'S TIMELINE
