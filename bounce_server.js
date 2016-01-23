@@ -60,8 +60,6 @@ var streamEncounters = function(){
 			if (match) {
 				data = chunk.substring(0, match.index+1);
 				chunk = chunk.substring(match.index+1);
-				console.log('data: '+data);
-				console.log('chunk: '+chunk);
 				// now parse
 				data = JSON.parse(data);
 				if (data._type == 'ENGAGEMENT'){
@@ -72,24 +70,16 @@ var streamEncounters = function(){
 					if (!(data.value2 in cache[data.value1])) cache[data.value1][data.value2] = new Date();
 					if (!(data.value1 in cache[data.value2])) cache[data.value2][data.value1] = new Date();
 				} else if (data._type == 'DISENGAGEMENT'){
-					console.log('val1 is '+data.value1);
-					console.log('val2 is '+data.value2);
 					// if the value1 exists in the cache and contains the value2
 					// remove value2 from cache[value1]
-					if (data.value1 in cache && data.value2 in cache[data.value1]){
-						console.log('removing from '+data.value1);
-						console.log(cache[data.value1]); 
+					if (data.value1 in cache && data.value2 in cache[data.value1]){ 
 						delete cache[data.value1][data.value2]
-						console.log(cache[data.value1);
 					}
 					if (data.value1 in cache && Object.keys(cache[data.value1]).length == 0) delete cache[data.value1]; // remove property if needed
 
 					// repeat for value2
 					if (data.value2 in cache && data.value1 in cache[data.value2]){
-						console.log('removing from '+data.value2); 
-						console.log(cache[data.value2]); 
 						delete cache[data.value2][data.value1]
-						console.log(cache[data.value2);
 					}
 					if (data.value2 in cache && Object.keys(cache[data.value2]).length == 0) delete cache[data.value2];
 				}
@@ -356,7 +346,10 @@ router.route('/post/bounce').post(function(req, res) {
 
 // GET PEOPLE AROUND THE USER
 router.route('/beacon/around').get(function(req, res) {
-	res.json(cache[req.body.beacon_id]);
+	console.log(req.query);
+	console.log(req.body);
+	console.log(req);
+	res.json(cache[req.query.beacon_id]);
 });
 
 // GET USER'S TIMELINE
