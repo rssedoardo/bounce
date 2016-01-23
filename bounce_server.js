@@ -46,6 +46,8 @@ var Post     = mongoose.model('Post');
 
 // =============================================================================
 // CACHING SYSTEM
+//
+// NOTE: this cache should be synchronised and only store users...maybe in V2 ;)
 // =============================================================================
 
 var cache = {};
@@ -63,17 +65,12 @@ var streamEncounters = function(){
 				// now parse
 				data = JSON.parse(data);
 				if (data._type == 'ENGAGEMENT'){
-					// Check both values are being used in the db as the beacon_id of some users
-					User.count({ beacon_id: { $in: [ data.value1, data.value2] } }, function(err, count) {
-						if (c == 2){
-							// create array if needed
-							if (!(data.value1 in cache)) cache[data.value1] = {};
-							if (!(data.value2 in cache)) cache[data.value2] = {};
-							// add beacon only if it's not already there
-							if (!(data.value2 in cache[data.value1])) cache[data.value1][data.value2] = new Date();
-							if (!(data.value1 in cache[data.value2])) cache[data.value2][data.value1] = new Date();
-						}
-					});
+					// create array if needed
+					if (!(data.value1 in cache)) cache[data.value1] = {};
+					if (!(data.value2 in cache)) cache[data.value2] = {};
+					// add beacon only if it's not already there
+					if (!(data.value2 in cache[data.value1])) cache[data.value1][data.value2] = new Date();
+					if (!(data.value1 in cache[data.value2])) cache[data.value2][data.value1] = new Date();
 				} else if (data._type == 'DISENGAGEMENT'){
 					// if the value1 exists in the cache and contains the value2
 					// remove value2 from cache[value1]
@@ -351,6 +348,24 @@ router.route('/post/bounce').post(function(req, res) {
 
 // GET PEOPLE AROUND THE USER
 router.route('/beacon/around').get(function(req, res) {
+
+	beacons = Object.keys(cache[req.query.beacon_id]);
+	usersBeacons = [];
+	async_calls = [];
+
+	async.each(beacons, function (beacon, cb){ 
+		User.findOne({
+			beacon_id: beacon
+		}, function(err, user) {
+			if (err) cb(err);
+			if (user) usersBeacons.push(beacon);
+			cb(null); // no user
+		});
+	}, function (err){
+		if (err) return console.log(err);
+		res.json({ success: true, beacons: usersBeacons }); 
+	});
+
 	res.json(cache[req.query.beacon_id]);
 });
 
