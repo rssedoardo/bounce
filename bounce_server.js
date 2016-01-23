@@ -53,37 +53,27 @@ var cache = {};
 var streamEncounters = function(){
 	http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
 		res.on('data', function(chunk){
-			chunk = ''+chunk;
-			//console.log(chunk);
-			var arr = chunk.trim().split(' ');
-			if (arr.length < 4){
-				console.log('Unable to parse stream from the encounter server');
-				
-			} else if (arr[0] == 'ENGAGEMENT'){
-				if (arr[1] in cache && cache[arr[1]].indexOf(arr[3]) == -1){
-					cache[arr[1]].push(arr[3]);
-				} else {
-					cache[arr[1]] = [arr[3]];
-				}
-				if (arr[3] in cache && cache[arr[3]].indexOf(arr[1]) == -1){
-					cache[arr[3]].push(arr[1]);
-				} else {
-					cache[arr[3]] = [arr[1]];
-				}
+			chunk = JSON.parse(''+chunk);
 
-			} else if (arr[0] == 'DISENGAGEMENT'){
-				if (arr[1] in cache){
-					index = cache[arr[1]].indexOf(arr[3]);
-					if (index > -1) cache[arr[1]].splice(index, 1);
-					if (cache[arr[1]].length == 0) delete cache[arr[1]]; // remove property if needed
-				}
-				if (arr[3] in cache){
-					index = cache[arr[3]].indexOf(arr[1]);
-					if (index > -1) cache[arr[3]].splice(index, 1);
-					if (cache[arr[3]].length == 0) delete cache[arr[3]]; // remove property if needed
-				}
+			if (chunk._type == 'ENGAGEMENT'){
+				// create array if needed
+				if (!(chunk.value1 in cache)) cache[chunk.value1] = [];
+				if (!(chunk.value2 in cache)) cache[chunk.value2] = [];
+				// add beacon only if it's not already there
+				if (cache[chunk.value1].indexOf(chunk.value2) == -1) cache[chunk.value1].push(chunk.value2);
+				if (cache[chunk.value2].indexOf(chunk.value1) == -1) cache[chunk.value2].push(chunk.value1);
+			} else if (chunk._type == 'DISENGAGEMENT'){
+				// if the value1 exists in the cache and contains the value2
+				// remove value2 from cache[value1]
+				if (chunk.value1 in cache && index = cache[value1].indexOf(chunk.value2) != -1) cache[value1].splice(index, 1);
+				if (chunk.value1].length == 0) delete cache[value1]; // remove property if needed
+
+				// repeat for value2
+				if (chunk.value2 in cache && index = cache[value2].indexOf(chunk.value1) != -1) cache[value2].splice(index, 1);
+				if (chunk.value2].length == 0) delete cache[value2];
 			}
 		});
+
 res.on('end', function(){
 	console.log('Stream closed, reconnecting...');
 	streamEncounters();
@@ -169,7 +159,7 @@ router.route('/beacon/available').post(function(req, res) {
 			beacon_id: beacon
 		}, function(err, user) {
 			if (err) cb(err);
-			if (!user) availableBeacons.push(beacons[beacon]);
+			if (!user) availableBeacons.push(beacons[beacon);
 			cb(null); // no user
 		});
 	}, function (err){
