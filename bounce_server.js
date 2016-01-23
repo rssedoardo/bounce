@@ -49,36 +49,49 @@ var Post     = mongoose.model('Post');
 // =============================================================================
 
 var cache = {};
+var chunk = '';
 
 var streamEncounters = function(){
 	http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
-		res.on('data', function(chunk){
-			chunk+='';
-			var complete = /\n/.exec(chunk);
-
-			if (complete) {
-				data = substring(0, match);
-				console.log(data);
-				chunk = substring(match);
-
-				data = JSON.parse(''+chunk);
-
+		res.on('data', function(buf){
+			
+			chunk+=buf;
+			var match = /\n/.exec(chunk);
+			if (match) {
+				data = chunk.substring(0, match.index+1);
+				chunk = chunk.substring(match.index+1);
+				console.log('data: '+data);
+				console.log('chunk: '+chunk);
+				// now parse
+				data = JSON.parse(data);
 				if (data._type == 'ENGAGEMENT'){
 					// create array if needed
 					if (!(data.value1 in cache)) cache[data.value1] = [];
 					if (!(data.value2 in cache)) cache[data.value2] = [];
 					// add beacon only if it's not already there
-					if (data[data.value1].indexOf(data.value2) == -1) cache[data.value1].push(data.value2);
-					if (data[data.value2].indexOf(data.value1) == -1) cache[data.value2].push(data.value1);
+					if (cache[data.value1].indexOf(data.value2) == -1) cache[data.value1].push(data.value2);
+					if (cache[data.value2].indexOf(data.value1) == -1) cache[data.value2].push(data.value1);
 				} else if (data._type == 'DISENGAGEMENT'){
+					console.log('val1 is '+data.value1);
+					console.log('val2 is '+data.value2);
 					// if the value1 exists in the cache and contains the value2
 					// remove value2 from cache[value1]
-					if (data.value1 in cache && index = cache[data.value1].indexOf(data.value2) != -1) cache[data.value1].splice(index, 1);
-					if (data.value1].length == 0) delete cache[data.value1]; // remove property if needed
+					if (data.value1 in cache && (index = cache[data.value1].indexOf(data.value2) != -1)){
+						console.log('removing from '+data.value1);
+						console.log(cache[data.value1]); 
+						cache[data.value1].splice(index, 1);
+						console.log(cache[data.value2]);
+					}
+					if (data.value1 in cache && cache[data.value1].length == 0) delete cache[data.value1]; // remove property if needed
 
 					// repeat for value2
-					if (data.value2 in cache && index = cache[data.value2].indexOf(data.value1) != -1) cache[data.value2].splice(index, 1);
-					if (data.value2].length == 0) delete cache[data.value2];
+					if (data.value2 in cache && (index = cache[data.value2].indexOf(data.value1) != -1)){
+						console.log('removing from '+data.value2); 
+						console.log(cache[data.value2]);
+						cache[data.value2].splice(index, 1);
+						console.log(cache[data.value2]);
+					}
+					if (data.value2 in cache && cache[data.value2].length == 0) delete cache[data.value2];
 				}
 			}
 		});
