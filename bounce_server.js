@@ -53,24 +53,33 @@ var cache = {};
 var streamEncounters = function(){
 	http.get('http://rssedoardo.me:80/enc/api/stream/', function(res) {
 		res.on('data', function(chunk){
-			chunk = JSON.parse(''+chunk);
+			chunk+='';
+			var complete = /\n/.exec(chunk);
 
-			if (chunk._type == 'ENGAGEMENT'){
-				// create array if needed
-				if (!(chunk.value1 in cache)) cache[chunk.value1] = [];
-				if (!(chunk.value2 in cache)) cache[chunk.value2] = [];
-				// add beacon only if it's not already there
-				if (cache[chunk.value1].indexOf(chunk.value2) == -1) cache[chunk.value1].push(chunk.value2);
-				if (cache[chunk.value2].indexOf(chunk.value1) == -1) cache[chunk.value2].push(chunk.value1);
-			} else if (chunk._type == 'DISENGAGEMENT'){
-				// if the value1 exists in the cache and contains the value2
-				// remove value2 from cache[value1]
-				if (chunk.value1 in cache && index = cache[value1].indexOf(chunk.value2) != -1) cache[value1].splice(index, 1);
-				if (chunk.value1].length == 0) delete cache[value1]; // remove property if needed
+			if (complete) {
+				data = substring(0, match);
+				console.log(data);
+				chunk = substring(match);
 
-				// repeat for value2
-				if (chunk.value2 in cache && index = cache[value2].indexOf(chunk.value1) != -1) cache[value2].splice(index, 1);
-				if (chunk.value2].length == 0) delete cache[value2];
+				data = JSON.parse(''+chunk);
+
+				if (data._type == 'ENGAGEMENT'){
+					// create array if needed
+					if (!(data.value1 in cache)) cache[data.value1] = [];
+					if (!(data.value2 in cache)) cache[data.value2] = [];
+					// add beacon only if it's not already there
+					if (data[data.value1].indexOf(data.value2) == -1) cache[data.value1].push(data.value2);
+					if (data[data.value2].indexOf(data.value1) == -1) cache[data.value2].push(data.value1);
+				} else if (data._type == 'DISENGAGEMENT'){
+					// if the value1 exists in the cache and contains the value2
+					// remove value2 from cache[value1]
+					if (data.value1 in cache && index = cache[data.value1].indexOf(data.value2) != -1) cache[data.value1].splice(index, 1);
+					if (data.value1].length == 0) delete cache[data.value1]; // remove property if needed
+
+					// repeat for value2
+					if (data.value2 in cache && index = cache[data.value2].indexOf(data.value1) != -1) cache[data.value2].splice(index, 1);
+					if (data.value2].length == 0) delete cache[data.value2];
+				}
 			}
 		});
 
@@ -334,7 +343,7 @@ router.route('/post/bounce').post(function(req, res) {
 
 // GET PEOPLE AROUND THE USER
 router.route('/beacon/around').get(function(req, res) {
-	res.json(cache[req.body.decoded]);
+	res.json(cache[req.body.beacon_id]);
 });
 
 // GET USER'S TIMELINE
