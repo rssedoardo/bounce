@@ -65,12 +65,12 @@ var streamEncounters = function(){
 			} else if (chunk._type == 'DISENGAGEMENT'){
 				// if the value1 exists in the cache and contains the value2
 				// remove value2 from cache[value1]
-				if (chunk.value1 in cache && index = cache[value1].indexOf(chunk.value2) != -1) cache[value1].splice(index, 1);
-				if (chunk.value1].length == 0) delete cache[value1]; // remove property if needed
+				if (chunk.value1 in cache && (index = cache[value1].indexOf(chunk.value2) != -1)) cache[value1].splice(index, 1);
+				if (cache[chunk.value1].length == 0) delete cache[value1]; // remove property if needed
 
 				// repeat for value2
-				if (chunk.value2 in cache && index = cache[value2].indexOf(chunk.value1) != -1) cache[value2].splice(index, 1);
-				if (chunk.value2].length == 0) delete cache[value2];
+				if (chunk.value2 in cache && (index = cache[value2].indexOf(chunk.value1) != -1)) cache[value2].splice(index, 1);
+				if (cache[chunk.value2].length == 0) delete cache[value2];
 			}
 		});
 
@@ -159,7 +159,7 @@ router.route('/beacon/available').post(function(req, res) {
 			beacon_id: beacon
 		}, function(err, user) {
 			if (err) cb(err);
-			if (!user) availableBeacons.push(beacons[beacon);
+			if (!user) availableBeacons.push(beacon);
 			cb(null); // no user
 		});
 	}, function (err){
