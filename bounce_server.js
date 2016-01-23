@@ -66,32 +66,32 @@ var streamEncounters = function(){
 				data = JSON.parse(data);
 				if (data._type == 'ENGAGEMENT'){
 					// create array if needed
-					if (!(data.value1 in cache)) cache[data.value1] = [];
-					if (!(data.value2 in cache)) cache[data.value2] = [];
+					if (!(data.value1 in cache)) cache[data.value1] = {};
+					if (!(data.value2 in cache)) cache[data.value2] = {};
 					// add beacon only if it's not already there
-					if (cache[data.value1].indexOf(data.value2) == -1) cache[data.value1].push(data.value2);
-					if (cache[data.value2].indexOf(data.value1) == -1) cache[data.value2].push(data.value1);
+					if (!(data.value2 in cache[data.value1])) cache[data.value1][data.value2] = new Date();
+					if (!(data.value1 in cache[data.value2])) cache[data.value2][data.value1] = new Date();
 				} else if (data._type == 'DISENGAGEMENT'){
 					console.log('val1 is '+data.value1);
 					console.log('val2 is '+data.value2);
 					// if the value1 exists in the cache and contains the value2
 					// remove value2 from cache[value1]
-					if (data.value1 in cache && (index = cache[data.value1].indexOf(data.value2) != -1)){
+					if (data.value1 in cache && data.value2 in cache[data.value1]){
 						console.log('removing from '+data.value1);
 						console.log(cache[data.value1]); 
-						cache[data.value1].splice(index, 1);
-						console.log(cache[data.value2]);
+						delete cache[data.value1][data.value2]
+						console.log(cache[data.value1);
 					}
-					if (data.value1 in cache && cache[data.value1].length == 0) delete cache[data.value1]; // remove property if needed
+					if (data.value1 in cache && Object.keys(cache[data.value1]).length == 0) delete cache[data.value1]; // remove property if needed
 
 					// repeat for value2
-					if (data.value2 in cache && (index = cache[data.value2].indexOf(data.value1) != -1)){
+					if (data.value2 in cache && data.value1 in cache[data.value2]){
 						console.log('removing from '+data.value2); 
-						console.log(cache[data.value2]);
-						cache[data.value2].splice(index, 1);
-						console.log(cache[data.value2]);
+						console.log(cache[data.value2]); 
+						delete cache[data.value2][data.value1]
+						console.log(cache[data.value2);
 					}
-					if (data.value2 in cache && cache[data.value2].length == 0) delete cache[data.value2];
+					if (data.value2 in cache && Object.keys(cache[data.value2]).length == 0) delete cache[data.value2];
 				}
 			}
 		});
