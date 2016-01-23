@@ -381,6 +381,17 @@ router.route('/user/timeline').get(function(req, res) {
 	});
 });
 
+// GET A POST
+router.route('/post/get').get(function(req, res) {
+	Post.findOne({
+		_id: req.query.post_id
+	}), function(err, post) {
+			if (err) console.log(err);
+			if (post) return res.json({success: true, post: post});
+			res.json({success: false, post: null});
+	});
+});
+
 // =============================================================================
 // REGISTER ROUTES
 // =============================================================================
