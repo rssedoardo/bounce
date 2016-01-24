@@ -385,7 +385,7 @@ router.route('/user/timeline').get(function(req, res) {
 router.route('/post/get').get(function(req, res) {
 	Post.findOne({
 		_id: req.query.post_id
-	}), function(err, post) {
+	}, function(err, post) {
 			if (err) console.log(err);
 			if (post) {
 				post.comments.reverse()
