@@ -388,23 +388,23 @@ router.route('/post/get').get(function(req, res) {
 	}, function(err, post) {
 			if (err) console.log(err);
 			if (post) {
-				post.comments.reverse()
 				return res.json({success: true, post: post});
 			}
 			res.json({success: false, post: null});
 	});
 });
 
-// ADD COMMENTO TO A POST
+// ADD COMMENT TO A POST
 router.route('/post/comment').post(function(req, res) {
 	// content
 	// user
 	Post.findOne({
 		_id: req.body.post_id
-	}), function(err, post) {
+	}, function(err, post) {
 			if (err) console.log(err);
 			if (post) {
 				post.comments.push({user: req.body.decoded, timestamp: new Date(), comment: req.body.comment})
+				post.save();
 				return res.json({success: true, message: 'Comment added successfully!'});
 			}
 			res.json({success: false, message: 'No such a post'});
