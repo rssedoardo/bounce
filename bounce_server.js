@@ -396,8 +396,6 @@ router.route('/post/get').get(function(req, res) {
 
 // ADD COMMENT TO A POST
 router.route('/post/comment').post(function(req, res) {
-	// content
-	// user
 	Post.findOne({
 		_id: req.body.post_id
 	}, function(err, post) {
@@ -408,6 +406,26 @@ router.route('/post/comment').post(function(req, res) {
 				return res.json({success: true, message: 'Comment added successfully!'});
 			}
 			res.json({success: false, message: 'No such a post'});
+	});
+});
+
+// LIKE/DISLIKE A POST
+router.route('/post/like').post(function(req, res) {
+	Post.findOne({
+		_id: req.body.post_id
+	}, function(err, post) {
+			if (err) console.log(err);
+			if (post) {
+				var index = post.likes.indexOf(req.body.decoded);
+				if ( index == -1){
+					post.likes.push(req.body.decoded);
+				} else{
+					post.likes.splice(index, 1)
+				}
+				post.save();
+				return res.json({success: true, message: 'Like added/removed successfully!'});
+			}
+			res.json({success: false, message: 'Unable to like/dislike!'});
 	});
 });
 
