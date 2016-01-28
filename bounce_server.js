@@ -255,7 +255,7 @@ router.route('/post/create').post(function(req, res) {
 			if (user) {
 					post.subscribers.push(user.username); // subscribe to post
 					bounceCounts++;
-					var temp = { other_user: user.username,
+					var temp = { other_user: req.body.decoded,
 						post: post._id,
 						timestamp: date,
 						bounces: 1};
