@@ -246,8 +246,8 @@ router.route('/post/create').post(function(req, res) {
 	});
 	// and bounce for the first time
 	var bounceCounts = 0;
-
-	async.each(beacons, function (beacon, cb){ 
+	
+	async.each(Object.keys(beacons), function (beacon, cb){ 
 		User.findOne({
 			beacon_id: beacon
 		}, function(err, user) {
@@ -303,7 +303,7 @@ router.route('/post/bounce').post(function(req, res) {
 		
 		var bounceCounts = 0;
 
-		async.each(beacons, function (beacon, cb){ 
+		async.each(Object.keys(beacons), function (beacon, cb){ 
 			User.findOne({
 				beacon_id: beacon
 			}, function(err, user) {
