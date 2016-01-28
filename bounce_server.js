@@ -268,6 +268,7 @@ router.route('/post/create').post(function(req, res) {
 		});
 	}, function (err){
 		if (err) return console.log(err);
+		if bounceCounts == 0) return res.json({success: false, bounces: bounceCounts, message: 'Post not create! No one is around'});	
 			// update owner:
 			User.findOne({
 				username: req.body.decoded
@@ -299,8 +300,7 @@ router.route('/post/bounce').post(function(req, res) {
 	var temp = { other_user: req.body.decoded,
 		post: req.body.post_id,
 		timestamp: new Date(),
-		bounces: req.body.bounces + 1};
-		
+		bounces: parseInt(req.body.bounces) + 1};
 		var bounceCounts = 0;
 
 		async.each(Object.keys(beacons), function (beacon, cb){ 
@@ -312,7 +312,9 @@ router.route('/post/bounce').post(function(req, res) {
 					bounceCounts++;
 					users.push(user.username); // used later for subscribing
 					user.timeline.push(temp); // and update timeline
-					user.save();
+					user.save(function(err){
+						console.log(err);
+					});
 					cb(null);
 				} else {
 					cb(null); // no user	
