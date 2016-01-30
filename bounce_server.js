@@ -387,10 +387,15 @@ router.route('/user/timeline').get(function(req, res) {
 router.route('/user/posts').get(function(req, res) {
 		User.findOne({
 			username: req.body.decoded
-		}, function(err, user) {
+		}, function(err, users) {
 			if (err) cb(err);
-			if (user) return res.json(user.user_posts.reverse());
-			res.json([]);
+			if (users) {
+				Post.find({owner: { $in: users.reverse() }}), function(err, posts){
+					return res.json(success: true, user_posts: posts);
+				});
+			} else {
+				res.json([]);
+			}
 		});
 });
 
