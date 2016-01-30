@@ -387,16 +387,12 @@ router.route('/user/timeline').get(function(req, res) {
 router.route('/user/posts').get(function(req, res) {
 		User.findOne({
 			username: req.body.decoded
-		}, function(err, users) {
+		}).populate('user_posts').sort({'user_posts.timestamp': 1})
+		.exec(function (err, user) { function(err, users) {
 			if (err) cb(err);
-			if (users) {
-				Post.find({owner: { $in: users}}).sort( {timestamp: 1}).exec( function(err, posts){
-					if (err) return res.json({success: false, message: err});
-					return res.json({success: true, user_posts: posts});
-				});
-			} else {
-				res.json([]);
-			}
+			if (user) {
+				return res.json({success: true, user_posts: user.user_posts});
+			res.json([]);
 		});
 });
 
