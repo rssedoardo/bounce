@@ -390,8 +390,9 @@ router.route('/user/posts').get(function(req, res) {
 		}, function(err, users) {
 			if (err) cb(err);
 			if (users) {
-				Post.find({owner: { $in: users.reverse() }}), function(err, posts){
-					return res.json(success: true, user_posts: posts);
+				Post.find({owner: { $in: users}}).sort( {timestamp: 1}, function(err, posts){
+					if (err) return res.json({success: false, message: err};
+					return res.json({success: true, user_posts: posts});
 				});
 			} else {
 				res.json([]);
