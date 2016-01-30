@@ -383,6 +383,17 @@ router.route('/user/timeline').get(function(req, res) {
 	});
 });
 
+// GET USER'S POSTS
+router.route('/user/posts').get(function(req, res) {
+		User.findOne({
+			username: req.body.decoded
+		}, function(err, user) {
+			if (err) cb(err);
+			if (user) return res.json(user.user_posts.reverse());
+			res.json([]);
+		});
+});
+
 // GET A POST
 router.route('/post/get').get(function(req, res) {
 	Post.findOne({
