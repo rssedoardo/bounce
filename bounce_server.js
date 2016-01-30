@@ -268,7 +268,7 @@ router.route('/post/create').post(function(req, res) {
 		});
 	}, function (err){
 		if (err) return console.log(err);
-		if bounceCounts == 0) return res.json({success: false, bounces: bounceCounts, message: 'Post not create! No one is around'});	
+		if (bounceCounts == 0) return res.json({success: false, bounces: bounceCounts, message: 'Post not create! No one is around'});	
 			// update owner:
 			User.findOne({
 				username: req.body.decoded
