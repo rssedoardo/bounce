@@ -395,12 +395,25 @@ router.route('/user/posts').get(function(req, res) {
 		});
 });
 
+// GET USER'S NOTIFICATIONS
+router.route('/user/posts').get(function(req, res) {
+		User.findOne({
+			username: req.body.decoded
+		}, function(err, user){
+			if (err) return console.log(err);
+			if (user){
+				return res.json({success: true, notifications: user.notifications});
+			}
+			return res.json({success: false, message: "No such user!"});
+		}
+});
+
 // GET A POST
 router.route('/post/get').get(function(req, res) {
 	Post.findOne({
 		_id: req.query.post_id
 	}, function(err, post) {
-			if (err) console.log(err);
+			if (err) return console.log(err);
 			if (post) {
 				return res.json({success: true, post: post});
 			}
@@ -416,8 +429,22 @@ router.route('/post/comment').post(function(req, res) {
 			if (err) console.log(err);
 			if (post) {
 				post.comments.push({user: req.body.decoded, timestamp: new Date(), comment: req.body.comment})
-				post.save();
-				return res.json({success: true, message: 'Comment added successfully!'});
+				var notification = req.body.decoded + " added a comment to one of the posts that you follow!";
+				temp = {content: notification, timestamp: new Date(), post_id: req.body.post_id};
+				User.find({
+					username: { $in: post.subscribers }
+				}, function(err, users){
+					if (users) {
+						users.forEach(function(user) {
+							if (user != req.body.decoded){
+								user.notifications.push(temp);
+								user.save();
+							}	
+						});
+						post.save();
+						return res.json({success: true, message: 'Comment added successfully!'});
+					}
+				});
 			}
 			res.json({success: false, message: 'No such a post'});
 	});
