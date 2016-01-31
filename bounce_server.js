@@ -388,10 +388,9 @@ router.route('/user/posts').get(function(req, res) {
 		User.findOne({
 			username: req.body.decoded
 		}).populate('user_posts').sort({'user_posts.timestamp': 1})
-		.exec(function (err, user) { function(err, users) {
+		.exec(function (err, user) {
 			if (err) cb(err);
-			if (user) {
-				return res.json({success: true, user_posts: user.user_posts});
+			if (user) return res.json({success: true, user_posts: user.user_posts});
 			res.json([]);
 		});
 });
