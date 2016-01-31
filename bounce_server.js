@@ -170,7 +170,7 @@ router.route('/beacon/available').post(function(req, res) {
 
 	async.each(beacons, function (beacon, cb){ 
 		User.findOne({
-			beacon_id: beacon
+			beacon_id: beacon.id
 		}, function(err, user) {
 			if (err) cb(err);
 			if (!user) availableBeacons.push(beacon);
@@ -390,7 +390,7 @@ router.route('/user/posts').get(function(req, res) {
 		}).populate('user_posts').sort({'user_posts.timestamp': 1})
 		.exec(function (err, user) {
 			if (err) cb(err);
-			if (user) return res.json({success: true, total_bounces: user.total_bounces, user_posts: user.user_posts});
+			if (user) return res.json({success: true, total_bounces: user.total_bounces, user_posts: user.user_posts.reverse()});
 			res.json([]);
 		});
 });
