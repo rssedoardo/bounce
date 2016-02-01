@@ -26,7 +26,7 @@ var UserSchema   = new Schema({
 			post: { type: ObjectId, ref: 'Post'},
 			timestamp: Date,
 			bounces: Number}],
-	notifications: [{content: String, timestamp: Date, post_id: String}]
+	notifications: [{content: String, timestamp: Date, post_id: String}],
 	user_posts: [{ type: ObjectId, ref: 'Post'}]
 });
 
