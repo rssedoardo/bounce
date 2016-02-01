@@ -120,7 +120,7 @@ router.route('/user/register').post(function(req, res) {
 		email: req.body.email,
 		total_bounces: 0,
 		encounters: [],
-		posts: [],
+		user_posts: [],
 		notifications: []
 	});
 
