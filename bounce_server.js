@@ -437,13 +437,13 @@ router.route('/post/comment').post(function(req, res) {
 				}, function(err, users){
 					if (users) {
 						users.forEach(function(user) {
-							if (user != req.body.decoded){
+							if (user.username != req.body.decoded){
+								// skip if owner:
 								if (typeof user.notifications == 'undefined' || user.notifications == null) user.notifications =[];
 								user.notifications.push(temp);
-								console.log(user.notifications);
 								user.save(function(err){
-						console.log(err);
-					});
+									console.log(err);
+								});
 							}	
 						});
 						post.save();
