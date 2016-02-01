@@ -124,6 +124,8 @@ router.route('/user/register').post(function(req, res) {
 		notifications: []
 	});
 
+	
+
 	// save and check for errors
 	user.save(function(err) {
 		if (err) {
@@ -168,10 +170,11 @@ router.route('/beacon/available').post(function(req, res) {
 	beacons = req.body.beacons;
 	availableBeacons = [];
 	async_calls = [];
-
+	console.log(beacons);
 	async.each(beacons, function (beacon, cb){ 
+		console.log(beacon[0]);
 		User.findOne({
-			beacon_id: beacon.id
+			beacon_id: beacon[0]
 		}, function(err, user) {
 			if (err) cb(err);
 			if (!user) availableBeacons.push(beacon);
