@@ -30,7 +30,7 @@ var UserSchema   = new Schema({
 			post: { type: ObjectId, ref: 'Post'},
 			timestamp: Date,
 			bounces: Number}],
-	user_posts: [{ type: ObjectId, ref: 'Post'}]
+	notifications: [{content: String, timestamp: Date, post_id: String]
 });
 
 UserSchema.path('email').validate(function (email) {
