@@ -264,6 +264,9 @@ router.route('/post/create').post(function(req, res) {
 						timestamp: date,
 						bounces: 1};
 					user.timeline.push(temp); // and update timeline
+					var notification = req.body.decoded + " bounced something to you!";
+					var tmp = {content: notification, timestamp: new Date(), post_id: req.body.post_id};
+					user.notifications.push(tmp);
 					user.save();
 					cb(null);
 			} else {
@@ -314,6 +317,9 @@ router.route('/post/bounce').post(function(req, res) {
 				if (err) cb(err);
 				if (user) {
 					bounceCounts++;
+					var notification = req.body.decoded + " bounced something to you!";
+					temp = {content: notification, timestamp: new Date(), post_id: req.body.post_id};
+					user.notifications.push(temp);
 					users.push(user.username); // used later for subscribing
 					user.timeline.push(temp); // and update timeline
 					user.save(function(err){
