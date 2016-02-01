@@ -120,7 +120,8 @@ router.route('/user/register').post(function(req, res) {
 		email: req.body.email,
 		total_bounces: 0,
 		encounters: [],
-		posts: []
+		posts: [],
+		notifications: []
 	});
 
 	// save and check for errors
@@ -396,7 +397,7 @@ router.route('/user/posts').get(function(req, res) {
 });
 
 // GET USER'S NOTIFICATIONS
-router.route('/user/posts').get(function(req, res) {
+router.route('/user/notifications').get(function(req, res) {
 		User.findOne({
 			username: req.body.decoded
 		}, function(err, user){
@@ -405,7 +406,7 @@ router.route('/user/posts').get(function(req, res) {
 				return res.json({success: true, notifications: user.notifications});
 			}
 			return res.json({success: false, message: "No such user!"});
-		}
+		});
 });
 
 // GET A POST
@@ -437,8 +438,12 @@ router.route('/post/comment').post(function(req, res) {
 					if (users) {
 						users.forEach(function(user) {
 							if (user != req.body.decoded){
+								if (typeof user.notifications == 'undefined' || user.notifications == null) user.notifications =[];
 								user.notifications.push(temp);
-								user.save();
+								console.log(user.notifications);
+								user.save(function(err){
+						console.log(err);
+					});
 							}	
 						});
 						post.save();
