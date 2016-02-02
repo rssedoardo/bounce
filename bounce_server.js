@@ -172,7 +172,7 @@ router.route('/beacon/available').get(function(req, res) {
 		}, function(err, user) {
 			if (err) cb(err);
 			if (!user) return res.json({success: true, available: true});
-			return res.json({success: true, available: false});
+			return res.json({success: true, available: false}); // already user
 		});
 });
 
