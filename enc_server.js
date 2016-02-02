@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 
 var streams = [];
 // use logger
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 
 // REDIS SETUP
 // ===========
@@ -67,7 +67,6 @@ router.get('/stream', function(req,res) {
 	newStream.pipe(res);
 
 	res.on('end', function() { 
-		console.log('closing');
 		streams.splice(streams.indexOf(newStream),1); 
 	}); 
 }); 
