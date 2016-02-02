@@ -25,7 +25,7 @@ var certificate = fs.readFileSync('var/server.crt');
 var server_opts = { key : p_key, cert : certificate};
 
 // use logger
-app.use(morgan('dev'));
+//app.use(morgan('dev'));
 
 // load env
 env( __dirname +  '/.env');
@@ -89,11 +89,11 @@ var streamEncounters = function(){
 		});
 
 res.on('end', function(){
-	console.log('Stream closed, reconnecting...');
+	//console.log('Stream closed, reconnecting...');
 	streamEncounters();
 });
 }).on('error', function(e) {
-	console.log("Got error: " + e.message + ' - reconnecting');
+	//console.log("Got error: " + e.message + ' - reconnecting');
 	streamEncounters();
 });
 }
