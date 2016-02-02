@@ -164,23 +164,16 @@ router.route('/user/login').post(function(req, res) {
 		});
 	});
 
-router.route('/beacon/available').post(function(req, res) {
-	beacons = req.body.beacons;
-	availableBeacons = [];
-	async_calls = [];
+router.route('/beacon/available').get(function(req, res) {
+	beacon = req.query.beacon;
 
-	async.each(beacons, function (beacon, cb){ 
 		User.findOne({
-			beacon_id: beacon.id
+			beacon_id: beacon
 		}, function(err, user) {
 			if (err) cb(err);
-			if (!user) availableBeacons.push(beacon);
-			cb(null); // no user
+			if (!user) return res.json({success: true, available: true});
+			return res.json({success: true, available: false});
 		});
-	}, function (err){
-		if (err) return console.log(err);
-		res.json({ success: true, beacons: availableBeacons }); 
-	});
 });
 
 router.route('/beacon/cache').get(function(req, res) {
