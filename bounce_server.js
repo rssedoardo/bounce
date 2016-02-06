@@ -322,14 +322,6 @@ router.route('/post/bounce').post(function(req, res) {
 			});
 		}, function (err){
 			if (err) return console.log(err);
-				// update owner:
-				User.findOne({
-					username: req.body.decoded
-				}, function(err, user) {
-					if (err) throw err;
-					if (user) {
-						user.total_bounces += bounceCounts;
-						user.save();
 						Post.findOne({
 							_id : req.body.post_id
 						}, function(err, post){
@@ -337,15 +329,23 @@ router.route('/post/bounce').post(function(req, res) {
 							for (user in users){
 								if (post.subscribers.indexOf(users[user]) == -1) post.subscribers.push(user.username);
 							}
+							// update owner
+							User.findOne({
+								username: post.owner
+							}, function(err, user){
+								if (user) {
+									user.total_bounces += bounceCounts;
+									user.save();
+								}
+							});
+
 							post.total_bounces += bounceCounts;
 							post.save(function(err, post){
 								if (err) console.log(err);
 								res.json({success: true, bounces: bounceCounts, message: "Post successfully bounced!"});
 							});
 						});
-					}
 				});
-			});
 });
 
 // GET PEOPLE AROUND THE USER
