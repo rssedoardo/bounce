@@ -14,6 +14,8 @@ var jwt	       = require('jsonwebtoken');
 var crypto     = require('crypto');
 var env        = require('node-env-file');
 var async      = require('async');
+var Parse 	   = require('parse').Parse;
+
 
 // BodyParser let us get the data from a POST req
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -31,6 +33,8 @@ var server_opts = { key : p_key, cert : certificate};
 env( __dirname +  '/.env');
 // authentication setup
 app.set('jwtTokenSecret', process.env.JWTSECRET);
+// load parse
+Parse.initialize(process.env.PARSEAPPID, process.env.PARSEJSKEY);
 
 // =============================================================================
 // DATABASE
@@ -315,21 +319,24 @@ router.route('/post/bounce').post(function(req, res) {
 					user.save(function(err){
 						console.log(err);
 					});
-					cb(null);
+					Parse.Push.send({
+					  channels: [user.username],
+					  data: {alert: 'New post bounced by '+req.body.decoded}
+					  }, {
+					    success: function () {
+					      cb(null);
+					    },
+					    error: function (error) {
+					      cb(error.message);
+					    }
+					});
+					
 				} else {
 					cb(null); // no user	
 				}
 			});
 		}, function (err){
 			if (err) return console.log(err);
-				// update owner:
-				User.findOne({
-					username: req.body.decoded
-				}, function(err, user) {
-					if (err) throw err;
-					if (user) {
-						user.total_bounces += bounceCounts;
-						user.save();
 						Post.findOne({
 							_id : req.body.post_id
 						}, function(err, post){
@@ -337,15 +344,23 @@ router.route('/post/bounce').post(function(req, res) {
 							for (user in users){
 								if (post.subscribers.indexOf(users[user]) == -1) post.subscribers.push(user.username);
 							}
+							// update owner
+							User.findOne({
+								username: post.owner
+							}, function(err, user){
+								if (user) {
+									user.total_bounces += bounceCounts;
+									user.save();
+								}
+							});
+
 							post.total_bounces += bounceCounts;
 							post.save(function(err, post){
 								if (err) console.log(err);
 								res.json({success: true, bounces: bounceCounts, message: "Post successfully bounced!"});
 							});
 						});
-					}
 				});
-			});
 });
 
 // GET PEOPLE AROUND THE USER
