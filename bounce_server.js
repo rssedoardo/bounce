@@ -14,6 +14,8 @@ var jwt	       = require('jsonwebtoken');
 var crypto     = require('crypto');
 var env        = require('node-env-file');
 var async      = require('async');
+var Parse 	   = require('parse').Parse;
+
 
 // BodyParser let us get the data from a POST req
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -31,6 +33,8 @@ var server_opts = { key : p_key, cert : certificate};
 env( __dirname +  '/.env');
 // authentication setup
 app.set('jwtTokenSecret', process.env.JWTSECRET);
+// load parse
+Parse.initialize(process.env.PARSEAPPID, process.env.PARSEJSKEY);
 
 // =============================================================================
 // DATABASE
@@ -315,7 +319,18 @@ router.route('/post/bounce').post(function(req, res) {
 					user.save(function(err){
 						console.log(err);
 					});
-					cb(null);
+					Parse.Push.send({
+					  channels: [user.username],
+					  data: {alert: 'New post bounced by '+req.body.decoded}
+					  }, {
+					    success: function () {
+					      cb(null);
+					    },
+					    error: function (error) {
+					      cb(error.message);
+					    }
+					});
+					
 				} else {
 					cb(null); // no user	
 				}
