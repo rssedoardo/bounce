@@ -14,7 +14,7 @@ var jwt	       = require('jsonwebtoken');
 var crypto     = require('crypto');
 var env        = require('node-env-file');
 var async      = require('async');
-var Parse 	   = require('parse').Parse;
+var Parse      = require('parse/node');
 
 
 // BodyParser let us get the data from a POST req
@@ -262,7 +262,17 @@ router.route('/post/create').post(function(req, res) {
 					var tmp = {content: notification, timestamp: new Date(), post_id: req.body.post_id};
 					user.notifications.push(tmp);
 					user.save();
-					cb(null);
+					Parse.Push.send({
+                                          channels: [user.username],
+                                          data: {alert: 'New post bounced by '+req.body.decoded}
+                                          }, {
+                                            success: function () {
+                                              cb(null);
+                                            },
+                                            error: function (error) {
+                                              cb(error);
+                                            }
+                                        });
 			} else {
 				cb(null); // no user	
 			}
@@ -291,7 +301,6 @@ router.route('/post/create').post(function(req, res) {
 });
 
 router.route('/post/bounce').post(function(req, res) {
-	
 	async_calls = [];
 	beacons = cache[req.body.beacon_id];
 	users = []
@@ -312,8 +321,8 @@ router.route('/post/bounce').post(function(req, res) {
 				if (user) {
 					bounceCounts++;
 					var notification = req.body.decoded + " bounced something to you!";
-					temp = {content: notification, timestamp: new Date(), post_id: req.body.post_id};
-					user.notifications.push(temp);
+					temp_notif = {content: notification, timestamp: new Date(), post_id: req.body.post_id};
+					user.notifications.push(temp_notif);
 					users.push(user.username); // used later for subscribing
 					user.timeline.push(temp); // and update timeline
 					user.save(function(err){
@@ -327,7 +336,7 @@ router.route('/post/bounce').post(function(req, res) {
 					      cb(null);
 					    },
 					    error: function (error) {
-					      cb(error.message);
+					      cb(error);
 					    }
 					});
 					
