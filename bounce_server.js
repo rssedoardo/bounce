@@ -426,6 +426,7 @@ router.route('/user/notifications').get(function(req, res) {
 		}, function(err, user){
 			if (err) return console.log(err);
 			if (user){
+				if (user.notifications) user.notifcations = user.notifcations.reverse();
 				return res.json({success: true, notifications: user.notifications});
 			}
 			return res.json({success: false, message: "No such user!"});
