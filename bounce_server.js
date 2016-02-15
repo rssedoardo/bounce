@@ -464,6 +464,17 @@ router.route('/post/comment').post(function(req, res) {
 							if (user.username != req.body.decoded){
 								// skip if owner:
 								if (typeof user.notifications == 'undefined' || user.notifications == null) user.notifications =[];
+								Parse.Push.send({
+                                          channels: [user.username],
+                                          data: {alert: 'New post commented by '+req.body.decoded}
+                                          }, {
+                                            success: function () {
+                                              //cb(null);
+                                            },
+                                            error: function (error) {
+                                              //cb(error);
+                                            }
+                                        });
 								user.notifications.push(temp);
 								user.save(function(err){
 									console.log(err);
