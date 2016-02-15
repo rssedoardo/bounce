@@ -10,7 +10,8 @@
 	"crypto-js": "*",
 	"node-env-file": "~0.1.8",
 	"jsonwebtoken": "*",
-    "redis": "*",
-    "js-combinatorics": "*"
+    	"redis": "*",
+	"parse": "*",
+    	"js-combinatorics": "*"
     }
 }
